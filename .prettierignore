@@ -1,0 +1,6 @@
+# Ignore everything except src and test directories
+*
+!src
+!src/**
+!test
+!test/**
