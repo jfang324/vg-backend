@@ -32,6 +32,9 @@ jobs:
             - name: Lint code
               run: npm run lint
 
+            - name: Check code formatting
+              run: npm run format
+
     test:
         needs: lint
         runs-on: ubuntu-latest
