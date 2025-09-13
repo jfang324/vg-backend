@@ -38,6 +38,14 @@ jobs:
             - name: Generate API clients
               run: npm run generate-api-client
 
+            - name: Cache generated API clients
+              uses: actions/cache@v4
+              with:
+                  path: generated/openapi/api-client
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-generated-api-client-
+
             - name: Lint code
               run: npm run lint
 
@@ -67,8 +75,13 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - name: Generate API clients
-              run: npm run generate-api-client
+            - name: Restore generated API clients
+              uses: actions/cache@v4
+              with:
+                  path: generated/openapi/api-client
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-generated-api-client-
 
             - name: Test code
               run: npm run test
@@ -96,8 +109,13 @@ jobs:
             - name: Install dependencies
               run: npm ci
             
-            - name: Generate API clients
-              run: npm run generate-api-client
+            - name: Restore generated API clients
+              uses: actions/cache@v4
+              with:
+                  path: generated/openapi/api-client
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-generated-api-client- 
 
             - name: Build code
               run: npm run build
