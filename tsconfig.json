@@ -23,6 +23,8 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@common/*": ["src/common/*"],
+      "@generated/*": ["generated/*"],
+      "@integrations/*": ["src/integrations/*"],
     }
   }
 }
