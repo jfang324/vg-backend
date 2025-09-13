@@ -29,6 +29,9 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Generate API clients
+              run: npm run generate-api-client
+
             - name: Lint code
               run: npm run lint
 
@@ -58,6 +61,9 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Generate API clients
+              run: npm run generate-api-client
+
             - name: Test code
               run: npm run test
 
@@ -83,6 +89,9 @@ jobs:
 
             - name: Install dependencies
               run: npm ci
+            
+            - name: Generate API clients
+              run: npm run generate-api-client
 
             - name: Build code
               run: npm run build

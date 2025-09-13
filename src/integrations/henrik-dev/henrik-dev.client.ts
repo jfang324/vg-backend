@@ -26,9 +26,9 @@ export class HenrikDevClient {
 		})
 	}
 
-    /**
-     * Say hello to HenrikDev
-     */
+	/**
+	 * Say hello to HenrikDev
+	 */
 	async sayHello() {
 		return this.generatedClient.valorantV4MatchesRegionPlatformNameTagGet(
 			'Hexennacht',
