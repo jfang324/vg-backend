@@ -2,7 +2,7 @@ name: Backend CI - Lint, Test, Build
 
 on:
     push:
-        branches: ['*']
+        branches: ['**']
     pull_request:
         branches: ['main']
 
