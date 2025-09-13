@@ -1,5 +1,10 @@
 name: Backend CI - Lint, Test, Build
 
+env:
+  BASE_URL: http://localhost
+  PORT: 3000
+  NODE_ENV: development
+  HENRIK_DEV_API_KEY: 'HDEV-asd590f0-asdf-asdf-asdf-0asdf0asdf'
 on:
     push:
         branches: ['**']
