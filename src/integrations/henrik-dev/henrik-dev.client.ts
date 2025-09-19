@@ -1,4 +1,4 @@
-import { DefaultApi } from '@generated/openapi/api-client'
+import { Affinities, DefaultApi, ModesApi, Platforms } from '@generated/openapi/api-client'
 import { Injectable } from '@nestjs/common'
 import type { AxiosInstance } from 'axios'
 
@@ -27,15 +27,17 @@ export class HenrikDevClient {
 	}
 
 	/**
-	 * Say hello to HenrikDev
+	 * Retrieves matches from the HenrikDev API with the provided parameters
 	 */
-	async sayHello() {
+	async getRecentMatches(region: string, platform: string, name: string, tag: string, mode: string, limit: number) {
 		return this.generatedClient.valorantV4MatchesRegionPlatformNameTagGet(
-			'Hexennacht',
-			'NA1',
-			'na',
-			'pc',
-			'competitive'
+			name,
+			tag,
+			region as Affinities,
+			platform as Platforms,
+			mode as ModesApi,
+			undefined,
+			limit
 		)
 	}
 }

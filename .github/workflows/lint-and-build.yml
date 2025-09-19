@@ -10,6 +10,7 @@ env:
   BASE_URL: http://localhost
   PORT: 3000
   NODE_ENV: development
+  DEFAULT_VERSION: 1
   HENRIK_DEV_API_KEY: 'HDEV-asd590f0-asdf-asdf-asdf-0asdf0asdf'
 
 jobs:
@@ -84,7 +85,7 @@ jobs:
                       ${{ runner.os }}-generated-api-client-
 
             - name: Test code
-              run: npm run test
+              run: npm run test:cov
 
     build:
         needs: test
