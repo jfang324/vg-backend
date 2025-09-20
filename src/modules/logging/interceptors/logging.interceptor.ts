@@ -1,3 +1,4 @@
+import { LoggingService } from '@modules/logging/logging.service'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { Observable } from 'rxjs'
@@ -7,7 +8,9 @@ import { tap } from 'rxjs/operators'
  * Logs basic information about the request and response.
  */
 @Injectable()
-export class LoggerInterceptor implements NestInterceptor {
+export class LoggingInterceptor implements NestInterceptor {
+	constructor(private readonly loggingService: LoggingService) {}
+
 	intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		const req: Request = context.switchToHttp().getRequest()
 		const method: string = req.method
@@ -22,8 +25,7 @@ export class LoggerInterceptor implements NestInterceptor {
 					const end: number = Date.now()
 					const duration = end - start
 
-					// eslint-disable-next-line no-console -- placeholder for sending logging request
-					console.log(`${method} ${url} ${res.statusCode} ${duration}ms`)
+					this.loggingService.logInfo(`${method} ${url} ${res.statusCode} ${duration}ms`)
 				}
 			})
 		)

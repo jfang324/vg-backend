@@ -24,7 +24,8 @@
     "paths": {
       "@common/*": ["src/common/*"],
       "@generated/*": ["generated/*"],
-      "@integrations/*": ["src/integrations/*"]
+      "@integrations/*": ["src/integrations/*"],
+      "@modules/*": ["src/modules/*"]
     }
   }
 }

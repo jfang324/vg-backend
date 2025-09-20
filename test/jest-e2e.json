@@ -10,6 +10,7 @@
 	"moduleNameMapper": {
 		"@common/(.*)": "<rootDir>/src/common/$1",
 		"@generated/(.*)": "<rootDir>/generated/$1",
-		"@integrations/(.*)": "<rootDir>/src/integrations/$1"
+		"@integrations/(.*)": "<rootDir>/src/integrations/$1",
+		"@modules/(.*)": "<rootDir>/src/modules/$1"
 	}
 }
