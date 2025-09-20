@@ -1,4 +1,4 @@
-import { LoggerInterceptor } from '@common/interceptors/logger.interceptor'
+import { LoggingInterceptor } from '@modules/logging/interceptors/logging.interceptor'
 import { VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
@@ -6,7 +6,7 @@ import { AppModule } from './app.module'
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
 
-	app.useGlobalInterceptors(new LoggerInterceptor())
+	app.useGlobalInterceptors(app.get(LoggingInterceptor))
 
 	app.enableVersioning({
 		type: VersioningType.URI,
