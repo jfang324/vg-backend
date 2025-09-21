@@ -44,6 +44,17 @@ export class HenrikDevService {
 					region: metadata?.region,
 					cluster: metadata?.cluster,
 					players: players.map((player) => {
+						//scrappy fix until swagger is updated
+						const customization = (
+							player as typeof player & {
+								customization: {
+									card: string
+									title: string
+									preferred_level_border: string
+								}
+							}
+						).customization
+
 						return {
 							player_id: player.puuid,
 							name: player.name,
@@ -54,11 +65,8 @@ export class HenrikDevService {
 							stats: player.stats,
 							ability_casts: player.ability_casts,
 							tier: player.tier,
-							customization: {
-								card: player.card_id,
-								title: player.title_id,
-								border: player.prefered_level_border
-							},
+							customization: customization,
+							preferred_level_border: player.prefered_level_border,
 							level: player.account_level,
 							session_playtime: player.session_playtime_in_ms,
 							behavior: player.behavior,

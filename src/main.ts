@@ -1,10 +1,28 @@
 import { LoggingInterceptor } from '@modules/logging/interceptors/logging.interceptor'
 import { VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
+
+	const config = new DocumentBuilder()
+		.setTitle('VG Backend')
+		.setDescription('VG Backend API')
+		.setVersion('1.0')
+		.addTag('VG Backend')
+		.build()
+
+	const documentFactory = () =>
+		SwaggerModule.createDocument(app, config, {
+			operationIdFactory: (controllerKey, methodKey) => methodKey
+		})
+
+	SwaggerModule.setup('swagger', app, documentFactory, {
+		jsonDocumentUrl: 'swagger.json',
+		yamlDocumentUrl: 'swagger.yaml'
+	})
 
 	app.useGlobalInterceptors(app.get(LoggingInterceptor))
 
