@@ -38,4 +38,15 @@ describe('LoggingService', () => {
 		expect(spy).toHaveBeenCalledWith(expect.stringContaining(serviceName))
 		expect(spy).toHaveBeenCalledWith(expect.stringContaining(apiError.message))
 	})
+
+	it('should log the error message and data source', () => {
+		const dataSource = 'test data source'
+		const error = 'test error'
+		const spy = jest.spyOn(mockLogger, 'error')
+
+		loggingService.logValidationError(dataSource, error)
+
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining(dataSource))
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining(error))
+	})
 })

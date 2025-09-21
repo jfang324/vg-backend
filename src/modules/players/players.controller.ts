@@ -7,6 +7,7 @@ import { PlatformValidationPipe } from '@common/pipes/platform-validation.pipe'
 import { RegionValidationPipe } from '@common/pipes/region-validation.pipe'
 import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { GetRecentMatchesDto } from './dtos/recent-matches.dto'
 import { LimitValidationPipe } from './pipes/limit-validation.pipe'
 import { NameTagValidationPipe, type NameTag } from './pipes/nametag-validation.pipe'
 import { PlayersService } from './players.service'
@@ -31,7 +32,7 @@ export class PlayersController {
 	@ApiQuery({ name: 'platform', required: false, enum: VALID_PLATFORMS, enumName: 'ValidPlatforms', type: 'string' })
 	@ApiQuery({ name: 'mode', required: false, enum: VALID_MODES, enumName: 'ValidModes', type: 'string' })
 	@ApiQuery({ name: 'limit', required: false, type: 'number', minimum: MIN_LIMIT, maximum: MAX_LIMIT })
-	@ApiResponse({ status: 200, description: 'A list of recent matches', type: [Object] })
+	@ApiResponse({ status: 200, description: 'A list of recent matches', type: GetRecentMatchesDto })
 	async getRecentMatches(
 		@Param('nameTag', NameTagValidationPipe) nameTag: NameTag,
 		@Query('region', RegionValidationPipe) region: string,
