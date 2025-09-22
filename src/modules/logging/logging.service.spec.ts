@@ -49,4 +49,15 @@ describe('LoggingService', () => {
 		expect(spy).toHaveBeenCalledWith(expect.stringContaining(dataSource))
 		expect(spy).toHaveBeenCalledWith(expect.stringContaining(error))
 	})
+
+	it('should log the error message and repository', () => {
+		const repository = 'test repository'
+		const error = 'test error'
+		const spy = jest.spyOn(mockLogger, 'error')
+
+		loggingService.logDatabaseError(repository, error)
+
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining(repository))
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining(error))
+	})
 })

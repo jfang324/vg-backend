@@ -21,7 +21,10 @@
     "test:unit:cov": "jest --config ./jest.config.json --testPathPatterns=src --coverage --verbose",
     "test:e2e": "jest --config ./test/jest-e2e.json --verbose --runInBand",
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --verbose --runInBand",
-    "generate-api-client": "openapi-generator-cli generate -i ./generated/openapi/swagger.yaml -g typescript-axios -o ./generated/openapi/api-client --additional-properties=withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api"
+    "generate-api-client": "openapi-generator-cli generate -i ./generated/openapi/swagger.yaml -g typescript-axios -o ./generated/openapi/api-client --additional-properties=withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api",
+    "generate-supabase-types": "npx supabase gen types typescript --project-id yxgtxtejrtflqfcmzsgj > ./generated/supabase/database.types.ts",
+    "start:redis": "docker run -d --name vg-backend-redis -p 6379:6379 redis:7",
+    "pause:redis": "docker pause vg-backend-redis"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -30,6 +33,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.0",
     "@openapitools/openapi-generator-cli": "^2.23.1",
+    "@supabase/supabase-js": "^2.57.4",
     "axios": "^1.12.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",

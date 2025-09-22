@@ -1,0 +1,56 @@
+import { Mode } from '@common/types/mode.type'
+import { Database } from '@generated/supabase/database.types'
+import { LoggingService } from '@modules/logging/logging.service'
+import { Inject, Injectable, InternalServerErrorException, OnModuleInit } from '@nestjs/common'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { ModeRepositoryInterface } from '../interfaces/mode.repository.interface'
+
+@Injectable()
+export class ModeRepository implements ModeRepositoryInterface, OnModuleInit {
+	private localModes: Map<string, Mode> = new Map()
+
+	constructor(
+		@Inject('SUPABASE_CLIENT') private readonly supabase: SupabaseClient<Database>,
+		private readonly loggingService: LoggingService
+	) {}
+
+	/**
+	 * On module init, retrieve all modes from the database and store them locally
+	 */
+	async onModuleInit() {
+		const { data, error } = await this.supabase.from('modes').select('*').select()
+
+		if (error) {
+			this.loggingService.logDatabaseError('Mode', error.message)
+			throw new InternalServerErrorException(`Failed to retrieve modes from database: ${error.message}`)
+		}
+
+		data.map((mode) => this.localModes.set(mode.id, mode))
+	}
+
+	/**
+	 * Upsert multiple modes in the database if they aren't stored locally
+	 * @param modes The modes to upsert
+	 * @returns The upserted modes
+	 */
+	async upsertMany(modes: Mode[]): Promise<Mode[]> {
+		const newModes = modes.filter((mode) => !this.localModes.has(mode.id))
+
+		if (newModes.length === 0) {
+			return modes
+		}
+
+		const { data: _, error } = await this.supabase
+			.from('modes')
+			.upsert(newModes, { onConflict: 'id', ignoreDuplicates: true })
+
+		if (error) {
+			this.loggingService.logDatabaseError('Mode', error.message)
+			return newModes
+		}
+
+		modes.map((mode) => this.localModes.set(mode.id, mode))
+
+		return modes
+	}
+}

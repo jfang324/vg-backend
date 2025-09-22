@@ -1,0 +1,3 @@
+ALTER table matches
+ALTER COLUMN map_id SET NOT NULL,
+ALTER COLUMN mode_id SET NOT NULL;

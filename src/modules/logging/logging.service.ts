@@ -38,4 +38,14 @@ export class LoggingService {
 	logValidationError(dataSource: string, error: string) {
 		this.logger.error(`Failed to validate data from ${dataSource} with error [${error}]`)
 	}
+
+	/**
+	 * Logs a formatted error message related to a database error using the NestJS Logger
+	 *
+	 * @param repository - The name of the repository that the error occurred in
+	 * @param error - The error message
+	 */
+	logDatabaseError(repository: string, error: string) {
+		this.logger.error(`Failed to save data to database for ${repository} repository with error [${error}]`)
+	}
 }

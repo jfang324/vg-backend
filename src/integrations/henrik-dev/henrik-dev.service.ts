@@ -71,8 +71,8 @@ export class HenrikDevService {
 
 				matches.push({
 					id: metadata.match_id,
-					map: metadata.map.id,
-					mode: metadata.queue.id,
+					map_id: metadata.map.id,
+					mode_id: metadata.queue.id,
 					date: metadata.started_at,
 					winning_team: winningTeam
 				})
@@ -97,7 +97,7 @@ export class HenrikDevService {
 						player_id: player.puuid,
 						match_id: metadata.match_id,
 						team: player.team_id,
-						agent: player.agent.id,
+						agent_id: player.agent.id,
 						score: player.stats.score,
 						kills: player.stats.kills,
 						deaths: player.stats.deaths,
@@ -135,6 +135,8 @@ export class HenrikDevService {
 
 				throw new InternalServerErrorException(`External service error`)
 			}
+
+			throw new InternalServerErrorException(`Something unexpected happened`)
 		}
 	}
 }

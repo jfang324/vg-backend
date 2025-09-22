@@ -10,7 +10,7 @@ export class RegionValidationPipe implements PipeTransform {
 			return DEFAULT_REGION
 		}
 
-		if (!VALID_REGIONS.includes(value)) {
+		if (!VALID_REGIONS.includes(value as (typeof VALID_REGIONS)[number])) {
 			throw new BadRequestException(`${value} is not a supported region`)
 		}
 

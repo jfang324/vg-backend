@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class MapDto {
 	@ApiProperty()
@@ -6,6 +6,9 @@ export class MapDto {
 
 	@ApiProperty()
 	name: string
+
+	@ApiPropertyOptional()
+	img?: string
 }
 
 export class ModeDto {
@@ -22,6 +25,9 @@ export class AgentDto {
 
 	@ApiProperty()
 	name: string
+
+	@ApiPropertyOptional()
+	img?: string
 }
 
 export class RankDto {
@@ -30,11 +36,17 @@ export class RankDto {
 
 	@ApiProperty()
 	name: string
+
+	@ApiPropertyOptional()
+	img?: string
 }
 
 export class CustomizationDto {
 	@ApiProperty()
 	card?: string
+
+	@ApiPropertyOptional()
+	card_img?: string
 
 	@ApiProperty()
 	title?: string

@@ -1,3 +1,4 @@
+import { Region, VALID_REGIONS } from '@common/constants/regions'
 import { z } from 'zod'
 
 export const MapSchema = z.object({
@@ -16,7 +17,7 @@ export const MetadataSchema = z.object({
 	started_at: z.string(),
 	map: MapSchema,
 	queue: QueueSchema,
-	region: z.string()
+	region: z.enum(VALID_REGIONS)
 })
 
 export const AgentSchema = z.object({
@@ -25,9 +26,9 @@ export const AgentSchema = z.object({
 })
 
 export const CustomizationSchema = z.object({
-	card: z.string().optional().nullable(),
-	title: z.string().optional().nullable(),
-	preferred_level_border: z.string().nullable()
+	card: z.string().default('').nullable(),
+	title: z.string().default('').nullable(),
+	preferred_level_border: z.string().default('').nullable()
 })
 
 export const RankSchema = z.object({
@@ -81,7 +82,7 @@ export type Player = {
 	id: string
 	name: string
 	tag: string
-	region: string
+	region: Region
 	level: number
 	customization: z.infer<typeof CustomizationSchema>
 	rank: z.infer<typeof RankSchema>
@@ -89,8 +90,8 @@ export type Player = {
 
 export type Match = {
 	id: string
-	map: string
-	mode: string
+	map_id: string
+	mode_id: string
 	date: string
 	winning_team: string
 }
@@ -99,7 +100,7 @@ export type Performance = {
 	player_id: string
 	match_id: string
 	team: string
-	agent: string
+	agent_id: string
 	score: number
 	kills: number
 	deaths: number
@@ -109,8 +110,8 @@ export type Performance = {
 	headshots: number
 	bodyshots: number
 	legshots: number
-	ability_casts: unknown
 	rank: z.infer<typeof RankSchema>
+	ability_casts: unknown
 	behavior: unknown
 	economy: unknown
 }
