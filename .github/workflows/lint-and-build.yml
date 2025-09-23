@@ -2,7 +2,8 @@ name: Backend CI - Lint, Test, Build
 
 on:
     push:
-        branches: ['**']
+        branches-ignore: 
+          - 'main'
     pull_request:
         branches: ['main']
 
@@ -12,6 +13,8 @@ env:
   NODE_ENV: development
   DEFAULT_VERSION: 1
   HENRIK_DEV_API_KEY: 'HDEV-asd590f0-asdf-asdf-asdf-0asdf0asdf'
+  SUPABASE_URL: 'https://abcdefgh.supabase.co'
+  SUPABASE_KEY: 'asdf0asdf-asdf-asdf-asdf-0asdf0asdf'
 
 jobs:
     lint:
