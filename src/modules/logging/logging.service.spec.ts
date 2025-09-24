@@ -1,4 +1,4 @@
-import { mockLogger } from '@mocks/nest.mock'
+import { mockLogger } from '@mocks/nest/nest.mock'
 import { Logger } from '@nestjs/common'
 import { AxiosError } from 'axios'
 import { LoggingService } from './logging.service'
