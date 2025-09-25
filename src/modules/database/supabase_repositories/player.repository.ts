@@ -28,4 +28,20 @@ export class PlayerRepository implements PlayerRepositoryInterface {
 
 		return players
 	}
+
+	/**
+	 * Get a player by their id
+	 * @param id The id of the player to get
+	 * @returns The player with the given id
+	 */
+	async getById(id: string): Promise<Player> {
+		const { data: player, error } = await this.supabase.from('players').select('*').eq('id', id).single()
+
+		if (error) {
+			this.loggingService.logDatabaseError('Player', error.message)
+			throw new Error(`Failed to retrieve player from database: ${error.message}`)
+		}
+
+		return player as Player
+	}
 }

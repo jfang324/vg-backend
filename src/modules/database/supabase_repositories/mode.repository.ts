@@ -53,4 +53,28 @@ export class ModeRepository implements ModeRepositoryInterface, OnModuleInit {
 
 		return modes
 	}
+
+	/**
+	 * Get a mode by its name
+	 * @param name The name of the mode to get
+	 * @returns The mode with the given name
+	 */
+	async getByName(name: string): Promise<Mode> {
+		for (const mode of this.localModes.values()) {
+			if (mode.name === name) {
+				return mode
+			}
+		}
+
+		const { data: mode, error } = await this.supabase.from('modes').select('*').eq('name', name).single()
+
+		if (error) {
+			this.loggingService.logDatabaseError('Mode', error.message)
+			throw new InternalServerErrorException(`Failed to retrieve mode from database: ${error.message}`)
+		}
+
+		this.localModes.set(mode.id, mode)
+
+		return mode
+	}
 }

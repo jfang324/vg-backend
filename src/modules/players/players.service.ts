@@ -1,3 +1,4 @@
+import { Mode } from '@common/types/mode.type'
 import { HenrikDevService } from '@integrations/henrik-dev/henrik-dev.service'
 import { AgentRepository } from '@modules/database/supabase_repositories/agent.repository'
 import { MapRepository } from '@modules/database/supabase_repositories/map.repository'
@@ -40,14 +41,13 @@ export class PlayersService {
 
 		const { matches, players, performances, maps, agents, modes } = data
 
-		const playerLookup = new Map(players.map((player) => [player.id, player]))
 		const agentLookup = new Map(agents.map((agent) => [agent.id, agent]))
 		const mapLookup = new Map(maps.map((map) => [map.id, map]))
 		const modeLookup = new Map(modes.map((mode) => [mode.id, mode]))
 
-		const currentPlayerId = players.find((player) => {
+		const currentPlayer = players.find((player) => {
 			return player.name === name && player.tag === tag
-		})!.id
+		})!
 
 		const staticTablePromises = Promise.all([
 			this.mapRepository.upsertMany(maps),
@@ -69,52 +69,129 @@ export class PlayersService {
 
 		return {
 			message: 'Successfully retrieved recent matches',
-			data: matches
-				.map((match) => {
-					const { map_id, mode_id, ...rest } = match
-					const map = mapLookup.get(map_id)
-					const mode = modeLookup.get(mode_id)
-
-					if (!map || !mode) {
-						return null
+			data: {
+				player: {
+					...currentPlayer,
+					rank: {
+						...currentPlayer.rank,
+						img: `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${currentPlayer.rank.id}/smallicon.png`
+					},
+					customization: {
+						...currentPlayer.customization,
+						card_img: `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`
 					}
+				},
+				matches: matches
+					.map((match, index) => {
+						const { map_id, mode_id, ...rest } = match
+						const map = mapLookup.get(map_id)
+						const mode = modeLookup.get(mode_id)
 
-					return {
-						...rest,
-						map: {
-							...map,
-							img: `https://media.valorant-api.com/maps/${map.id}/splash.png`
-						},
-						mode,
-						players: performances
-							.filter((performance) => performance.player_id === currentPlayerId)
-							.map((performance) => {
-								const { player_id, match_id: _, ...performance_data } = performance
-								const agent = agentLookup.get(performance.agent_id)!
-								const player = playerLookup.get(player_id)!
+						if (!map || !mode) {
+							return null
+						}
 
-								return {
-									...performance_data,
-									player: {
-										...player,
-										rank: {
-											...player.rank,
-											img: `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${player.rank.id}/smallicon.png`
-										},
-										customization: {
-											...player.customization,
-											card_img: `https://media.valorant-api.com/playercards/${player.customization.card}/wideart.png`
-										}
-									},
-									agent: {
-										...agent,
-										img: `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`
-									}
-								}
-							})
+						const relevantPerformances = performances.filter(
+							(performance) => performance.player_id === currentPlayer.id
+						)
+
+						const { agent_id, ...performance } = relevantPerformances[index]
+						const stats = {
+							...performance,
+							agent: {
+								...agentLookup.get(agent_id)!,
+								img: `https://media.valorant-api.com/agents/${agentLookup.get(agent_id)!.id}/displayicon.png`
+							}
+						}
+
+						return {
+							...rest,
+							map: {
+								...map,
+								img: `https://media.valorant-api.com/maps/${map.id}/splash.png`
+							},
+							mode,
+							stats
+						}
+					})
+					.filter((x) => x !== null)
+			}
+		}
+	}
+
+	/**
+	 * Get stored matches from the HenrikDev API and transforms the data into a more usable format
+	 * @param region The region to get matches from
+	 * @param name The name of the player to get matches from
+	 * @param tag The tag of the player to get matches from
+	 * @param mode The mode to get matches from
+	 * @param page The page of matches to get
+	 * @param limit The limit of matches to get
+	 * @returns The simplified data from the HenrikDev API
+	 */
+	async getStoredMatches(region: string, name: string, tag: string, mode: string, page: number, limit: number) {
+		const data = await this.henrikDevService.getStoredMatches(region, name, tag, mode, page, limit)
+
+		if (!data) {
+			throw new InternalServerErrorException(`Failed to retrieve stored matches`)
+		}
+
+		const { playerId, matches, performances, maps, agents, modes } = data
+
+		const agentLookup = new Map(agents.map((agent) => [agent.id, agent]))
+		const mapLookup = new Map(maps.map((map) => [map.id, map]))
+		const modeLookup = new Map<string, Mode>()
+
+		const fullModes = await Promise.all(modes.map((mode) => this.modeRepository.getByName(mode.name)))
+		fullModes.map((mode) => modeLookup.set(mode.name, mode))
+
+		const player = await this.playerRepository.getById(playerId)
+
+		return {
+			message: 'Successfully retrieved stored matches',
+			data: {
+				player: {
+					...player,
+					rank: {
+						...player.rank,
+						img: `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${player.rank.id}/smallicon.png`
+					},
+					customization: {
+						...player.customization,
+						card_img: `https://media.valorant-api.com/playercards/${player.customization.card}/wideart.png`
 					}
-				})
-				.filter((x) => x !== null)
+				},
+				matches: matches
+					.map((match, index) => {
+						const { map_id, mode_id, ...rest } = match
+						const map = mapLookup.get(map_id)
+						const mode = modeLookup.get(mode_id)
+
+						if (!map || !mode) {
+							return null
+						}
+
+						const { agent_id, ...performance } = performances[index]
+						const stats = {
+							...performance,
+							agent: {
+								...agentLookup.get(agent_id)!,
+								img: `https://media.valorant-api.com/agents/${agentLookup.get(agent_id)!.id}/displayicon.png`
+							}
+						}
+
+						return {
+							...rest,
+							map: {
+								...map,
+								img: `https://media.valorant-api.com/maps/${map.id}/splash.png`
+							},
+							mode,
+							stats
+						}
+					})
+					.filter((x) => x !== null)
+			}
 		}
 	}
 }

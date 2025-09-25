@@ -40,4 +40,19 @@ export class HenrikDevClient {
 			limit
 		)
 	}
+
+	/**
+	 * Retrieves stored matches from the HenrikDev API with the provided parameters
+	 */
+	async getStoredMatches(region: string, name: string, tag: string, mode: string, page: number, limit: number) {
+		return this.generatedClient.valorantV1StoredMatchesRegionNameTagGet(
+			region as Affinities,
+			name,
+			tag,
+			mode as ModesApi,
+			undefined,
+			page,
+			limit
+		)
+	}
 }

@@ -6,7 +6,22 @@ export const mockUpsert = jest.fn().mockImplementation((data: unknown, _: any) =
 })
 
 export const mockFrom = jest.fn().mockImplementation((_: string) => ({
-	upsert: mockUpsert
+	upsert: mockUpsert,
+	select: mockSelect
+}))
+
+export const mockSingle = jest.fn().mockImplementation((data: unknown[]) => {
+	return data[0] || null
+})
+
+export const mockEq = jest.fn().mockImplementation((_: string) => {
+	return {
+		single: mockSingle
+	}
+})
+
+export const mockSelect = jest.fn().mockImplementation((_: string) => ({
+	eq: mockEq
 }))
 
 export const mockSupabaseClient: jest.Mocked<SupabaseClient<Database>> = {

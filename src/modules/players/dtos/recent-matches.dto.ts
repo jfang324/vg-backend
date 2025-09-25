@@ -71,19 +71,19 @@ export class PlayerDto {
 	@ApiProperty()
 	level: number
 
-	@ApiProperty({ type: AgentDto })
-	agent: AgentDto
+	@ApiProperty({ type: CustomizationDto })
+	customization: CustomizationDto
 
 	@ApiProperty({ type: RankDto })
 	rank: RankDto
-
-	@ApiProperty({ type: CustomizationDto })
-	customization: CustomizationDto
 }
 
 export class PerformanceDto {
-	@ApiProperty({ type: PlayerDto })
-	player: PlayerDto
+	@ApiProperty()
+	player_id: string
+
+	@ApiProperty()
+	match_id: string
 
 	@ApiProperty()
 	team: string
@@ -118,17 +118,17 @@ export class PerformanceDto {
 	@ApiProperty()
 	legshots: number
 
-	@ApiProperty({ type: Object, nullable: true })
-	ability_casts: Record<string, string>
+	// @ApiProperty({ type: Object, nullable: true })
+	// ability_casts: Record<string, string>
 
-	@ApiProperty({ type: Object, nullable: true })
-	rank: RankDto
+	// @ApiProperty({ type: Object, nullable: true })
+	// rank: RankDto
 
-	@ApiProperty({ type: Object, nullable: true })
-	behavior: Record<string, string>
+	// @ApiProperty({ type: Object, nullable: true })
+	// behavior: Record<string, string>
 
-	@ApiProperty({ type: Object, nullable: true })
-	economy: Record<string, string>
+	// @ApiProperty({ type: Object, nullable: true })
+	// economy: Record<string, string>
 }
 
 export class MatchDto {
@@ -147,14 +147,30 @@ export class MatchDto {
 	@ApiProperty()
 	winning_team: string
 
-	@ApiProperty({ type: [PerformanceDto] })
-	players: PerformanceDto[]
+	@ApiProperty()
+	stats: PerformanceDto
+}
+
+export class PayloadDto {
+	@ApiProperty({ type: PlayerDto })
+	player: PlayerDto
+
+	@ApiProperty({ type: [MatchDto] })
+	matches: MatchDto[]
 }
 
 export class GetRecentMatchesDto {
 	@ApiProperty()
 	message: string
 
-	@ApiProperty({ type: [MatchDto] })
-	data: MatchDto[]
+	@ApiProperty()
+	data: PayloadDto
+}
+
+export class GetStoredMatchesDto {
+	@ApiProperty()
+	message: string
+
+	@ApiProperty({ type: PayloadDto })
+	data: PayloadDto
 }

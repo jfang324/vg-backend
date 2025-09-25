@@ -2,9 +2,9 @@ import { mockRecentmatchesData } from '@mocks/data/recent-matches.mock'
 import { mockAgentRepository } from '@mocks/repositories/agent.repository.mock'
 import { mockMapRepository } from '@mocks/repositories/map.repository.mock'
 import { mockMatchRepository } from '@mocks/repositories/match.repository.mock'
-import { mockModeRepository } from '@mocks/repositories/mode.repository.mock'
+import { mockMode, mockModeRepository } from '@mocks/repositories/mode.repository.mock'
 import { mockPerformanceRepository } from '@mocks/repositories/performance.repository.mock'
-import { mockPlayerRepository } from '@mocks/repositories/player.repository.mock'
+import { mockPlayer, mockPlayerRepository } from '@mocks/repositories/player.repository.mock'
 import { mockHenrikDevService } from '@mocks/services/henrik-dev.service.mock'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
 import { AxiosError } from 'axios'
@@ -132,6 +132,73 @@ describe('PlayersService', () => {
 			'Hexennacht',
 			'NA1',
 			'competitive',
+			10
+		)
+	})
+
+	it('should return a list of stored matches', async () => {
+		mockPlayerRepository.getById.mockResolvedValueOnce(mockPlayer)
+		mockModeRepository.getByName.mockResolvedValueOnce(mockMode)
+
+		const response = await playerService.getStoredMatches('na', 'Hexennacht', 'NA1', 'competitive', 1, 10)
+
+		expect(mockHenrikDevService.getStoredMatches).toHaveBeenCalledWith(
+			'na',
+			'Hexennacht',
+			'NA1',
+			'competitive',
+			1,
+			10
+		)
+		expect(mockPlayerRepository.getById).toHaveBeenCalledWith('8918b04d-9034-5838-b3ed-dd7ae3efe5e5')
+		expect(mockModeRepository.getByName).toHaveBeenCalledWith('Competitive')
+		expect(response.data.player.id).toEqual(mockPlayer.id)
+	})
+
+	it('should throw an error if the HenrikDev API returns an error', async () => {
+		mockHenrikDevService.getStoredMatches.mockRejectedValue(new AxiosError('User not found', '404'))
+
+		try {
+			await playerService.getStoredMatches('na', 'Hexennacht', 'NA1', 'competitive', 1, 10)
+		} catch (error: unknown) {
+			expect(error).toBeInstanceOf(AxiosError)
+
+			if (error instanceof AxiosError) {
+				expect(error.code).toBe('404')
+				expect(error.message).toBe('User not found')
+			}
+		}
+
+		expect(mockHenrikDevService.getStoredMatches).toHaveBeenCalledWith(
+			'na',
+			'Hexennacht',
+			'NA1',
+			'competitive',
+			1,
+			10
+		)
+	})
+
+	it('should throw an error if the HenrikDev API returns a 403 error', async () => {
+		mockHenrikDevService.getStoredMatches.mockRejectedValue(new AxiosError('Forbidden', '403'))
+
+		try {
+			await playerService.getStoredMatches('na', 'Hexennacht', 'NA1', 'competitive', 1, 10)
+		} catch (error: unknown) {
+			expect(error).toBeInstanceOf(AxiosError)
+
+			if (error instanceof AxiosError) {
+				expect(error.code).toBe('403')
+				expect(error.message).toBe('Forbidden')
+			}
+		}
+
+		expect(mockHenrikDevService.getStoredMatches).toHaveBeenCalledWith(
+			'na',
+			'Hexennacht',
+			'NA1',
+			'competitive',
+			1,
 			10
 		)
 	})

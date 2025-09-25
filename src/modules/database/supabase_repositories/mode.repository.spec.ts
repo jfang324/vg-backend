@@ -1,7 +1,7 @@
 import { Mode } from '@common/types/mode.type'
 import { Database } from '@generated/supabase/database.types'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
-import { mockFrom, mockSupabaseClient, mockUpsert } from '@mocks/supabase.mock'
+import { mockEq, mockFrom, mockSelect, mockSingle, mockSupabaseClient, mockUpsert } from '@mocks/supabase.mock'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { createSupabaseClient } from '../connections/supabase.connection'
 import { ModeRepository } from './mode.repository'
@@ -53,9 +53,7 @@ describe('ModeRepository', () => {
 
 	it('it should throw an error if the upsertMany call fails', async () => {
 		const mockModes: Mode[] = [{ id: 'test-mode-id', name: 'test-mode-name', mode_type: 'test-mode-type' }]
-		mockFrom.mockImplementation(() => {
-			throw new Error('Something went wrong')
-		})
+		mockUpsert.mockReturnValueOnce({ error: new Error('Something went wrong') })
 
 		try {
 			await modeRepository.upsertMany(mockModes)
@@ -66,5 +64,37 @@ describe('ModeRepository', () => {
 				expect(error.message).toBe('Something went wrong')
 			}
 		}
+	})
+
+	it('it should retrieve a mode from the database if it is not cached', async () => {
+		const mockModes: Mode[] = [{ id: 'test-mode-id', name: 'test-mode-name', mode_type: 'test-mode-type' }]
+		mockSingle.mockReturnValueOnce({ data: mockModes[0] })
+
+		const response = await modeRepository.getByName(mockModes[0].name)
+
+		expect(mockFrom).toHaveBeenCalledWith('modes')
+		expect(mockFrom).toHaveBeenCalledTimes(1)
+		expect(mockSelect).toHaveBeenCalledWith('*')
+		expect(mockSelect).toHaveBeenCalledTimes(1)
+		expect(mockEq).toHaveBeenCalledWith('name', 'test-mode-name')
+		expect(mockEq).toHaveBeenCalledTimes(1)
+		expect(response).toEqual(mockModes[0])
+	})
+
+	it('it should retrieve a mode from the cache if it is cached', async () => {
+		const mockModes: Mode[] = [{ id: 'test-mode-id', name: 'test-mode-name', mode_type: 'test-mode-type' }]
+		mockSingle.mockReturnValueOnce({ data: mockModes[0] }).mockReturnValueOnce({ data: mockModes[0] })
+
+		const response = await modeRepository.getByName(mockModes[0].name)
+		const response2 = await modeRepository.getByName(mockModes[0].name)
+
+		expect(mockFrom).toHaveBeenCalledWith('modes')
+		expect(mockFrom).toHaveBeenCalledTimes(1)
+		expect(mockSelect).toHaveBeenCalledWith('*')
+		expect(mockSelect).toHaveBeenCalledTimes(1)
+		expect(mockEq).toHaveBeenCalledWith('name', 'test-mode-name')
+		expect(mockEq).toHaveBeenCalledTimes(1)
+		expect(response).toEqual(mockModes[0])
+		expect(response2).toEqual(mockModes[0])
 	})
 })

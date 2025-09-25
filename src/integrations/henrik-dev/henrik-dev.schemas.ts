@@ -12,7 +12,7 @@ export const QueueSchema = z.object({
 	mode_type: z.string()
 })
 
-export const MetadataSchema = z.object({
+export const RecentMetadataSchema = z.object({
 	match_id: z.string(),
 	started_at: z.string(),
 	map: MapSchema,
@@ -36,7 +36,7 @@ export const RankSchema = z.object({
 	name: z.string()
 })
 
-export const PlayerStatsSchema = z.object({
+export const RecentPlayerStatsSchema = z.object({
 	score: z.number(),
 	kills: z.number(),
 	deaths: z.number(),
@@ -50,7 +50,7 @@ export const PlayerStatsSchema = z.object({
 	legshots: z.number()
 })
 
-export const PlayerSchema = z.object({
+export const RecentPlayerSchema = z.object({
 	puuid: z.string(),
 	name: z.string(),
 	tag: z.string(),
@@ -59,24 +59,24 @@ export const PlayerSchema = z.object({
 	account_level: z.number(),
 	tier: RankSchema,
 	customization: CustomizationSchema,
-	stats: PlayerStatsSchema,
+	stats: RecentPlayerStatsSchema,
 	ability_casts: z.unknown().optional(),
 	behavior: z.unknown().optional(),
 	economy: z.unknown().optional()
 })
 
-export const TeamSchema = z.object({
+export const RecentTeamSchema = z.object({
 	team_id: z.string(),
 	won: z.boolean()
 })
 
-export const V4MatchSchema = z.object({
-	metadata: MetadataSchema,
-	players: z.array(PlayerSchema),
-	teams: z.array(TeamSchema)
+export const V4RecentMatchSchema = z.object({
+	metadata: RecentMetadataSchema,
+	players: z.array(RecentPlayerSchema),
+	teams: z.array(RecentTeamSchema)
 })
 
-export type ValidatedV4Match = z.infer<typeof V4MatchSchema>
+export type ValidatedV4Match = z.infer<typeof V4RecentMatchSchema>
 
 export type Player = {
 	id: string
@@ -115,3 +115,45 @@ export type Performance = {
 	behavior: unknown
 	economy: unknown
 }
+
+export const StoredMetadataSchema = z.object({
+	id: z.string(),
+	map: MapSchema,
+	mode: z.string(),
+	started_at: z.string(),
+	region: z.enum(VALID_REGIONS)
+})
+
+export const StoredPlayerStatsSchema = z.object({
+	puuid: z.string(),
+	team: z.string(),
+	character: z.object({
+		id: z.string(),
+		name: z.string()
+	}),
+	tier: z.number(),
+	score: z.number(),
+	kills: z.number(),
+	deaths: z.number(),
+	assists: z.number(),
+	shots: z.object({
+		head: z.number(),
+		body: z.number(),
+		leg: z.number()
+	}),
+	damage: z.object({
+		made: z.number(),
+		received: z.number()
+	})
+})
+
+export const V1ValidatedStoredMatch = z.object({
+	meta: StoredMetadataSchema,
+	stats: StoredPlayerStatsSchema,
+	teams: z.object({
+		red: z.number(),
+		blue: z.number()
+	})
+})
+
+export type ValidatedV1StoredMatch = z.infer<typeof V1ValidatedStoredMatch>
