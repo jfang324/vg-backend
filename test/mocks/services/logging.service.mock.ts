@@ -9,7 +9,9 @@ export const mockLoggingService: jest.Mocked<LoggingService> = {
 jest.mock('@modules/logging/logging.service', () => ({
 	LoggingService: jest.fn().mockImplementation(() => ({
 		logInfo: jest.fn(),
+		logApiError: jest.fn(),
 		logValidationError: jest.fn(),
-		logDatabaseError: jest.fn()
+		logDatabaseError: jest.fn(),
+		logRedisError: jest.fn()
 	}))
 }))

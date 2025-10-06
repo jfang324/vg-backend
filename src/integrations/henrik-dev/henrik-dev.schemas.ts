@@ -115,3 +115,45 @@ export type Performance = {
 	behavior: unknown
 	economy: unknown
 }
+
+export const StoredMetadataSchema = z.object({
+	id: z.string(),
+	map: MapSchema,
+	mode: z.string(),
+	started_at: z.string(),
+	region: z.enum(VALID_REGIONS)
+})
+
+export const StoredPlayerStatsSchema = z.object({
+	puuid: z.string(),
+	team: z.string(),
+	character: z.object({
+		id: z.string(),
+		name: z.string()
+	}),
+	tier: z.number(),
+	score: z.number(),
+	kills: z.number(),
+	deaths: z.number(),
+	assists: z.number(),
+	shots: z.object({
+		head: z.number(),
+		body: z.number(),
+		leg: z.number()
+	}),
+	damage: z.object({
+		made: z.number(),
+		received: z.number()
+	})
+})
+
+export const V1ValidatedStoredMatch = z.object({
+	meta: StoredMetadataSchema,
+	stats: StoredPlayerStatsSchema,
+	teams: z.object({
+		red: z.number(),
+		blue: z.number()
+	})
+})
+
+export type ValidatedV1StoredMatch = z.infer<typeof V1ValidatedStoredMatch>

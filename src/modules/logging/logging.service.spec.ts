@@ -1,4 +1,4 @@
-import { mockLogger } from '@mocks/nest.mock'
+import { mockLogger } from '@mocks/nest/nest.mock'
 import { Logger } from '@nestjs/common'
 import { AxiosError } from 'axios'
 import { LoggingService } from './logging.service'
@@ -47,6 +47,16 @@ describe('LoggingService', () => {
 		loggingService.logDatabaseError(repository, error)
 
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(repository))
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
+	})
+
+	it('should log the error message and source', () => {
+		const source = 'test source'
+		const error = 'test error'
+
+		loggingService.logRedisError(source, error)
+
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(source))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
 	})
 })

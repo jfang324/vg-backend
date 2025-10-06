@@ -53,4 +53,10 @@ export default tseslint.config(
       'no-console': ['error', { allow: ['error', 'warn'] }],
     },
   },
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  }
 );

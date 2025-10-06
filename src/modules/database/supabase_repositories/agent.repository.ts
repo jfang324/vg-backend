@@ -21,7 +21,7 @@ export class AgentRepository implements AgentRepositoryInterface {
 		const { data, error } = await this.supabase.from('agents').select('*').select()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Agent', error.message)
+			this.loggingService.logDatabaseError('Agent', 'onModuleInit', error.message)
 			throw new InternalServerErrorException(`Failed to retrieve agents from database: ${error.message}`)
 		}
 
@@ -45,12 +45,36 @@ export class AgentRepository implements AgentRepositoryInterface {
 			.upsert(agents, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Agent', error.message)
+			this.loggingService.logDatabaseError('Agent', 'upsertMany', error.message)
 			return newAgents
 		}
 
 		agents.map((agent) => this.localAgents.set(agent.id, agent))
 
 		return agents
+	}
+
+	/**
+	 * Get many agents by ids
+	 * @param ids The ids of the agents to find
+	 * @returns The found agents
+	 */
+	async getManyByIds(ids: string[]): Promise<Agent[]> {
+		const agents = ids.map((id) => this.localAgents.get(id)).filter((agent) => !!agent)
+
+		if (agents.length === ids.length) {
+			return agents
+		}
+
+		const { data, error } = await this.supabase.from('agents').select('*').in('id', ids)
+
+		if (error) {
+			this.loggingService.logDatabaseError('Agent', 'getManyByIds', error.message)
+			return []
+		}
+
+		data.map((agent) => this.localAgents.set(agent.id, agent))
+
+		return data
 	}
 }

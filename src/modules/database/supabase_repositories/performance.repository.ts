@@ -23,9 +23,32 @@ export class PerformanceRepository implements PerformanceRepositoryInterface {
 			.upsert(performances, { onConflict: 'player_id, match_id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Performance', error.message)
+			this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message)
 		}
 
 		return performances
+	}
+
+	/**
+	 * Find performances by match id
+	 * @param matchId The match id to find performances by
+	 * @returns The found performances
+	 */
+	async getByMatchId(matchId: string): Promise<Performance[]> {
+		const { data, error } = await this.supabase.from('performances').select('*').eq('match_id', matchId)
+
+		if (error) {
+			this.loggingService.logDatabaseError('Performance', 'getByMatchId', error.message)
+			return []
+		}
+
+		return data.map((performance) => {
+			const rank = performance.rank as { id: number; name: string }
+
+			return {
+				...performance,
+				rank
+			}
+		})
 	}
 }

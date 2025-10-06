@@ -23,9 +23,41 @@ export class PlayerRepository implements PlayerRepositoryInterface {
 			.upsert(players, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Player', error.message)
+			this.loggingService.logDatabaseError('Player', 'upsertMany', error.message)
 		}
 
 		return players
+	}
+
+	/**
+	 * Get a player by their id
+	 * @param id The id of the player to get
+	 * @returns The player with the given id
+	 */
+	async getById(id: string): Promise<Player> {
+		const { data: player, error } = await this.supabase.from('players').select('*').eq('id', id).single()
+
+		if (error) {
+			this.loggingService.logDatabaseError('Player', 'getById', error.message)
+			throw new Error(`Failed to retrieve player from database: ${error.message}`)
+		}
+
+		return player as Player
+	}
+
+	/**
+	 * Find players by their ids
+	 * @param ids The ids of the players to find
+	 * @returns The found players
+	 */
+	async getManyByIds(ids: string[]): Promise<Player[]> {
+		const { data, error } = await this.supabase.from('players').select('*').in('id', ids)
+
+		if (error) {
+			this.loggingService.logDatabaseError('Player', 'findManyByIds', error.message)
+			return []
+		}
+
+		return data as Player[]
 	}
 }
