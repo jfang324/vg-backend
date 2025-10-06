@@ -1,13 +1,11 @@
-export const mockRecentMatchesData = {
-	matches: [
-		{
-			id: 'a181a03a-c839-4f87-9ac7-dcd2975da17f',
-			map_id: '2fe4ed3a-450a-948b-6d6b-e89a78e680a9',
-			mode_id: 'competitive',
-			date: '2025-09-22T19:35:53.928Z',
-			winning_team: 'Red'
-		}
-	],
+export const mockMatchPerformances = {
+	match: {
+		id: 'a181a03a-c839-4f87-9ac7-dcd2975da17f',
+		map_id: '2fe4ed3a-450a-948b-6d6b-e89a78e680a9',
+		mode_id: 'competitive',
+		date: '2025-09-22T19:35:53.928Z',
+		winning_team: 'Red'
+	},
 	players: [
 		{
 			id: 'b9e2c8d0-e192-5ada-9c60-fc27055faad1',

@@ -4,7 +4,7 @@ import { AxiosError } from 'axios'
 import { HenrikDevClient } from './henrik-dev.client'
 import {
 	V1ValidatedStoredMatch,
-	V4RecentMatchSchema,
+	V4MatchSchema,
 	ValidatedV1StoredMatch,
 	ValidatedV4Match,
 	type Match,
@@ -35,7 +35,7 @@ export class HenrikDevService {
 			const rawMatchData = response.data.data || []
 			const validatedMatchData: ValidatedV4Match[] = rawMatchData.map((match) => {
 				try {
-					return V4RecentMatchSchema.parse(match)
+					return V4MatchSchema.parse(match)
 				} catch (error) {
 					this.loggingService.logValidationError(
 						'HenrikDev',
@@ -196,7 +196,7 @@ export class HenrikDevService {
 				})
 
 				matches.push({
-					id: metadata.map.id,
+					id: metadata.id,
 					map_id: metadata.map.id,
 					mode_id: metadata.mode,
 					date: metadata.started_at,
@@ -256,6 +256,117 @@ export class HenrikDevService {
 				throw new InternalServerErrorException(`External service error`)
 			}
 
+			throw new InternalServerErrorException(`Something unexpected happened`)
+		}
+	}
+
+	/**
+	 * Get a match by its id and region
+	 * @param id The id of the match
+	 * @param region The region of the match
+	 * @returns The simplified data from the HenrikDev API
+	 **/
+	async getMatchByIdAndRegion(id: string, region: string) {
+		try {
+			const response = await this.henrikDevClient.getMatchByIdAndRegion(id, region)
+			const rawMatchData = response.data.data
+			const validatedMatchData: ValidatedV4Match = V4MatchSchema.parse(rawMatchData)
+
+			const maps = new Map<string, { id: string; name: string }>()
+			const agents = new Map<string, { id: string; name: string }>()
+			const modes = new Map<string, { id: string; name: string; mode_type: string }>()
+
+			const players: Player[] = []
+			const performances: Performance[] = []
+
+			const metadata = validatedMatchData.metadata
+			const teams = validatedMatchData.teams
+
+			let winningTeam = 'draw'
+
+			for (const team of teams || []) {
+				if (team.won) {
+					winningTeam = team.team_id
+					break
+				}
+			}
+
+			const match = {
+				id: metadata.match_id,
+				map_id: metadata.map.id,
+				mode_id: metadata.queue.id,
+				date: metadata.started_at,
+				winning_team: winningTeam
+			}
+
+			maps.set(metadata.map.id, {
+				id: metadata.map.id,
+				name: metadata.map.name
+			})
+
+			modes.set(metadata.queue.id, {
+				id: metadata.queue.id,
+				name: metadata.queue.name,
+				mode_type: metadata.queue.mode_type
+			})
+
+			for (const player of validatedMatchData.players || []) {
+				agents.set(player.agent.id, {
+					id: player.agent.id,
+					name: player.agent.name
+				})
+
+				players.push({
+					id: player.puuid,
+					name: player.name,
+					tag: player.tag,
+					region: metadata.region,
+					level: player.account_level,
+					customization: player.customization,
+					rank: player.tier
+				})
+
+				performances.push({
+					player_id: player.puuid,
+					match_id: metadata.match_id,
+					team: player.team_id,
+					agent_id: player.agent.id,
+					score: player.stats.score,
+					kills: player.stats.kills,
+					deaths: player.stats.deaths,
+					assists: player.stats.assists,
+					damage_dealt: player.stats.damage.dealt,
+					damage_taken: player.stats.damage.received,
+					headshots: player.stats.headshots,
+					bodyshots: player.stats.bodyshots,
+					legshots: player.stats.legshots,
+					ability_casts: player.ability_casts,
+					rank: player.tier,
+					behavior: player.behavior,
+					economy: player.economy
+				})
+			}
+
+			return {
+				match,
+				players,
+				performances,
+				maps: Array.from(maps.values()),
+				agents: Array.from(agents.values()),
+				modes: Array.from(modes.values())
+			}
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				this.loggingService.logApiError('HenrikDev', error)
+
+				const status = error.response?.status
+
+				if (status === 404) {
+					throw new NotFoundException('User not found')
+				}
+
+				throw new InternalServerErrorException(`External service error`)
+			}
 			throw new InternalServerErrorException(`Something unexpected happened`)
 		}
 	}

@@ -21,7 +21,7 @@ export class MapRepository implements MapRepositoryInterface, OnModuleInit {
 		const { data, error } = await this.supabase.from('maps').select('*').select()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Map', error.message)
+			this.loggingService.logDatabaseError('Map', 'onModuleInit', error.message)
 			throw new InternalServerErrorException(`Failed to retrieve maps from database: ${error.message}`)
 		}
 
@@ -45,12 +45,36 @@ export class MapRepository implements MapRepositoryInterface, OnModuleInit {
 			.upsert(newMaps, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Map', error.message)
+			this.loggingService.logDatabaseError('Map', 'upsertMany', error.message)
 			return newMaps
 		}
 
 		maps.map((map) => this.localMaps.set(map.id, map))
 
 		return maps
+	}
+
+	/**
+	 * Find a map by its id
+	 * @param id The id of the map to find
+	 * @returns The found map
+	 */
+	async getById(id: string): Promise<GameMap | null> {
+		const map = this.localMaps.get(id)
+
+		if (map) {
+			return map
+		}
+
+		const { data, error } = await this.supabase.from('maps').select('*').eq('id', id).single()
+
+		if (error) {
+			this.loggingService.logDatabaseError('Map', 'getById', error.message)
+			return null
+		}
+
+		this.localMaps.set(data.id, data)
+
+		return data
 	}
 }

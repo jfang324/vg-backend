@@ -55,4 +55,11 @@ export class HenrikDevClient {
 			limit
 		)
 	}
+
+	/**
+	 * Retrieves a match from the HenrikDev API with the provided parameters and transforms the data into a more usable format
+	 */
+	async getMatchByIdAndRegion(id: string, region: string) {
+		return this.generatedClient.valorantV4MatchRegionMatchidGet(id, region as Affinities)
+	}
 }

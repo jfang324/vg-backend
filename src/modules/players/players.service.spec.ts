@@ -1,4 +1,4 @@
-import { mockRecentmatchesData } from '@mocks/data/recent-matches.mock'
+import { mockRecentMatchesData } from '@mocks/data/recent-matches.mock'
 import { mockAgentRepository } from '@mocks/repositories/agent.repository.mock'
 import { mockMapRepository } from '@mocks/repositories/map.repository.mock'
 import { mockMatchRepository } from '@mocks/repositories/match.repository.mock'
@@ -7,6 +7,7 @@ import { mockPerformanceRepository } from '@mocks/repositories/performance.repos
 import { mockPlayer, mockPlayerRepository } from '@mocks/repositories/player.repository.mock'
 import { mockHenrikDevService } from '@mocks/services/henrik-dev.service.mock'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
+import { mockRedisService } from '@mocks/services/redis.service.mock'
 import { AxiosError } from 'axios'
 import { PlayersService } from './players.service'
 
@@ -38,6 +39,10 @@ jest.mock('@modules/database/supabase_repositories/player.repository', () => ({
 	PlayerRepository: jest.fn(() => mockPlayerRepository)
 }))
 
+jest.mock('@modules/redis/redis.service', () => ({
+	RedisService: jest.fn(() => mockRedisService)
+}))
+
 //required to resolve fire-and-forget promises
 function flushPromises() {
 	return new Promise((resolve) => setImmediate(resolve))
@@ -55,7 +60,8 @@ describe('PlayersService', () => {
 			mockModeRepository,
 			mockPlayerRepository,
 			mockPerformanceRepository,
-			mockLoggingService
+			mockLoggingService,
+			mockRedisService
 		)
 	})
 
@@ -64,8 +70,10 @@ describe('PlayersService', () => {
 	})
 
 	it('should get recent matches and cache performances and static data', async () => {
+		mockHenrikDevService.getRecentMatches.mockResolvedValueOnce(mockRecentMatchesData as unknown as any)
+
 		await playerService.getRecentMatches('na', 'pc', 'Hexennacht', 'NA1', 'competitive', 10)
-		const { matches, players, performances, maps, agents, modes } = mockRecentmatchesData
+		const { matches, players, performances, maps, agents, modes } = mockRecentMatchesData
 
 		await flushPromises()
 		await flushPromises()
@@ -156,7 +164,7 @@ describe('PlayersService', () => {
 	})
 
 	it('should throw an error if the HenrikDev API returns an error', async () => {
-		mockHenrikDevService.getStoredMatches.mockRejectedValue(new AxiosError('User not found', '404'))
+		mockHenrikDevService.getStoredMatches.mockRejectedValueOnce(new AxiosError('User not found', '404'))
 
 		try {
 			await playerService.getStoredMatches('na', 'Hexennacht', 'NA1', 'competitive', 1, 10)
@@ -180,7 +188,7 @@ describe('PlayersService', () => {
 	})
 
 	it('should throw an error if the HenrikDev API returns a 403 error', async () => {
-		mockHenrikDevService.getStoredMatches.mockRejectedValue(new AxiosError('Forbidden', '403'))
+		mockHenrikDevService.getStoredMatches.mockRejectedValueOnce(new AxiosError('Forbidden', '403'))
 
 		try {
 			await playerService.getStoredMatches('na', 'Hexennacht', 'NA1', 'competitive', 1, 10)
@@ -201,5 +209,23 @@ describe('PlayersService', () => {
 			1,
 			10
 		)
+	})
+
+	it('should get cached assets if they exist', async () => {
+		mockRedisService.getProfileCache.mockResolvedValueOnce(['https://media.valorant-api.com/maps/1/splash.png'])
+
+		const response = await playerService.getCachedAssets('na', 'pc', 'Hexennacht', 'NA1', 'competitive')
+
+		expect(mockRedisService.getProfileCache).toHaveBeenCalledWith('na', 'pc', 'Hexennacht', 'NA1', 'competitive')
+		expect(response).toEqual(['https://media.valorant-api.com/maps/1/splash.png'])
+	})
+
+	it('should return an empty array if cached assets do not exist', async () => {
+		mockRedisService.getProfileCache.mockResolvedValueOnce([])
+
+		const response = await playerService.getCachedAssets('na', 'pc', 'Hexennacht', 'NA1', 'competitive')
+
+		expect(mockRedisService.getProfileCache).toHaveBeenCalledWith('na', 'pc', 'Hexennacht', 'NA1', 'competitive')
+		expect(response).toEqual([])
 	})
 })

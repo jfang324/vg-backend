@@ -18,9 +18,12 @@ export const mockPlayer = {
 	}
 } as unknown as Player
 
+export const mockPlayers = [mockPlayer]
+
 export const mockPlayerRepository: jest.Mocked<PlayerRepository> = {
 	upsertMany: jest.fn(),
-	getById: jest.fn()
+	getById: jest.fn(),
+	getManyByIds: jest.fn()
 } as unknown as jest.Mocked<PlayerRepository>
 
 jest.mock('@modules/database/supabase_repositories/player.repository', () => ({

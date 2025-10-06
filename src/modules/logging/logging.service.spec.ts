@@ -49,4 +49,14 @@ describe('LoggingService', () => {
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(repository))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
 	})
+
+	it('should log the error message and source', () => {
+		const source = 'test source'
+		const error = 'test error'
+
+		loggingService.logRedisError(source, error)
+
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(source))
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
+	})
 })

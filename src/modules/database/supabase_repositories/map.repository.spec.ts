@@ -1,7 +1,7 @@
 import { Map } from '@common/types/map.type'
 import { Database } from '@generated/supabase/database.types'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
-import { mockFrom, mockSupabaseClient, mockUpsert } from '@mocks/supabase.mock'
+import { mockEq, mockFrom, mockSelect, mockSingle, mockSupabaseClient, mockUpsert } from '@mocks/supabase.mock'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { createSupabaseClient } from '../connections/supabase.connection'
 import { MapRepository } from './map.repository'
@@ -53,18 +53,58 @@ describe('MapRepository', () => {
 
 	it('it should throw an error if the upsertMany call fails', async () => {
 		const mockMaps: Map[] = [{ id: 'test-map-id', name: 'test-map-name' }]
-		mockFrom.mockImplementation(() => {
-			throw new Error('Something went wrong')
-		})
+		mockUpsert.mockReturnValueOnce({ error: new Error('Something went wrong') })
 
-		try {
-			await mapRepository.upsertMany(mockMaps)
-		} catch (error: unknown) {
-			expect(error).toBeInstanceOf(Error)
+		await mapRepository.upsertMany(mockMaps)
 
-			if (error instanceof Error) {
-				expect(error.message).toBe('Something went wrong')
-			}
-		}
+		expect(mockFrom).toHaveBeenCalledWith('maps')
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('Map', 'upsertMany', 'Something went wrong')
+	})
+
+	it('it should retrieve a map from the database if it is not cached', async () => {
+		const mockMaps: Map[] = [{ id: 'test-map-id', name: 'test-map-name' }]
+		mockSingle.mockReturnValueOnce({ data: mockMaps[0] })
+
+		const response = await mapRepository.getById(mockMaps[0].id)
+
+		expect(mockFrom).toHaveBeenCalledWith('maps')
+		expect(mockFrom).toHaveBeenCalledTimes(1)
+		expect(mockSelect).toHaveBeenCalledWith('*')
+		expect(mockSelect).toHaveBeenCalledTimes(1)
+		expect(mockEq).toHaveBeenCalledWith('id', 'test-map-id')
+		expect(mockEq).toHaveBeenCalledTimes(1)
+		expect(response).toEqual(mockMaps[0])
+	})
+
+	it('it should retrieve a map from the cache if it is cached', async () => {
+		const mockMaps: Map[] = [{ id: 'test-map-id', name: 'test-map-name' }]
+		mockSingle.mockReturnValueOnce({ data: mockMaps[0] })
+
+		await mapRepository.getById(mockMaps[0].id)
+		const response = await mapRepository.getById(mockMaps[0].id)
+
+		expect(mockFrom).toHaveBeenCalledWith('maps')
+		expect(mockFrom).toHaveBeenCalledTimes(1)
+		expect(mockSelect).toHaveBeenCalledWith('*')
+		expect(mockSelect).toHaveBeenCalledTimes(1)
+		expect(mockEq).toHaveBeenCalledWith('id', 'test-map-id')
+		expect(mockEq).toHaveBeenCalledTimes(1)
+		expect(response).toEqual(mockMaps[0])
+	})
+
+	it('it should return null and log an error if the map is not found', async () => {
+		const mockMaps: Map[] = [{ id: 'test-map-id', name: 'test-map-name' }]
+		mockSingle.mockReturnValueOnce({ error: new Error('Something went wrong') })
+
+		const response = await mapRepository.getById(mockMaps[0].id)
+
+		expect(mockFrom).toHaveBeenCalledWith('maps')
+		expect(mockFrom).toHaveBeenCalledTimes(1)
+		expect(mockSelect).toHaveBeenCalledWith('*')
+		expect(mockSelect).toHaveBeenCalledTimes(1)
+		expect(mockEq).toHaveBeenCalledWith('id', 'test-map-id')
+		expect(mockEq).toHaveBeenCalledTimes(1)
+		expect(response).toEqual(null)
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('Map', 'getById', 'Something went wrong')
 	})
 })

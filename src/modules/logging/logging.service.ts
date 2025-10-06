@@ -45,7 +45,17 @@ export class LoggingService {
 	 * @param repository - The name of the repository that the error occurred in
 	 * @param error - The error message
 	 */
-	logDatabaseError(repository: string, error: string) {
-		this.logger.error(`Failed to save data to database for ${repository} repository with error [${error}]`)
+	logDatabaseError(repository: string, operation: string, error: string) {
+		this.logger.error(`Failed to ${operation} for ${repository} repository with error [${error}]`)
+	}
+
+	/**
+	 * Logs a formatted error message related to a Redis error using the NestJS Logger
+	 *
+	 * @param source - The name of the source that the error occurred in
+	 * @param error - The error message
+	 */
+	logRedisError(source: string, error: string) {
+		this.logger.error(`Failed to cache [${source}] with error [${error}]`)
 	}
 }

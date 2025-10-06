@@ -1,0 +1,1 @@
+CREATE INDEX ON performances (match_id);

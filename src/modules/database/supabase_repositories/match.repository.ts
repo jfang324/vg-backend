@@ -26,9 +26,31 @@ export class MatchRepository implements MatchRepositoryInterface {
 			})
 
 		if (error) {
-			this.loggingService.logDatabaseError('Match', error.message)
+			this.loggingService.logDatabaseError('Match', 'upsertMany', error.message)
 		}
 
 		return matches
+	}
+
+	/**
+	 * Find a match by its id
+	 * @param id The id of the match to find
+	 * @returns The found match
+	 */
+	async getById(id: string): Promise<Match | null> {
+		const { data, error } = await this.supabase.from('matches').select('*').eq('id', id)
+
+		if (error) {
+			this.loggingService.logDatabaseError('Match', 'getById', error.message)
+		}
+
+		if (!data) {
+			return null
+		}
+
+		return {
+			...data[0],
+			date: new Date(data[0].date)
+		}
 	}
 }

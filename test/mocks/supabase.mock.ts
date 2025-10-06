@@ -11,7 +11,7 @@ export const mockFrom = jest.fn().mockImplementation((_: string) => ({
 }))
 
 export const mockSingle = jest.fn().mockImplementation((data: unknown[]) => {
-	return data[0] || null
+	return data
 })
 
 export const mockEq = jest.fn().mockImplementation((_: string) => {
@@ -20,8 +20,15 @@ export const mockEq = jest.fn().mockImplementation((_: string) => {
 	}
 })
 
+export const mockIn = jest.fn().mockImplementation((_: string, __: unknown) => {
+	return {
+		single: mockSingle
+	}
+})
+
 export const mockSelect = jest.fn().mockImplementation((_: string) => ({
-	eq: mockEq
+	eq: mockEq,
+	in: mockIn
 }))
 
 export const mockSupabaseClient: jest.Mocked<SupabaseClient<Database>> = {

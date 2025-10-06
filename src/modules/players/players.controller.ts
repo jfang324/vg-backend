@@ -85,4 +85,32 @@ export class PlayersController {
 
 		return response
 	}
+
+	@Get(':nameTag/assets')
+	@ApiOperation({ summary: 'Get cached assets for a player' })
+	@ApiParam({
+		name: 'nameTag',
+		required: true,
+		type: 'string',
+		description: 'Must be a valid Valorant name with # separating the name and the tag',
+		example: 'Hexennacht#NA1'
+	})
+	@ApiQuery({ name: 'region', required: false, enum: VALID_REGIONS, enumName: 'ValidRegions', type: 'string' })
+	@ApiQuery({ name: 'platform', required: false, enum: VALID_PLATFORMS, enumName: 'ValidPlatforms', type: 'string' })
+	@ApiQuery({ name: 'mode', required: false, enum: VALID_MODES, enumName: 'ValidModes', type: 'string' })
+	@ApiResponse({
+		status: 200,
+		description: 'A list of cached assets',
+		schema: { type: 'array', items: { type: 'string', format: 'url' } }
+	})
+	async getCachedAssets(
+		@Param('nameTag', NameTagValidationPipe) nameTag: NameTag,
+		@Query('region', RegionValidationPipe) region: string,
+		@Query('platform', PlatformValidationPipe) platform: string,
+		@Query('mode', ModeValidationPipe) mode: string
+	) {
+		const response = await this.playersService.getCachedAssets(region, platform, nameTag.name, nameTag.tag, mode)
+
+		return response
+	}
 }

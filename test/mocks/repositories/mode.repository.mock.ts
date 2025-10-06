@@ -9,7 +9,8 @@ export const mockMode = {
 
 export const mockModeRepository: jest.Mocked<ModeRepository> = {
 	upsertMany: jest.fn(),
-	getByName: jest.fn()
+	getByName: jest.fn(),
+	getById: jest.fn()
 } as unknown as jest.Mocked<ModeRepository>
 
 jest.mock('@modules/database/supabase_repositories/mode.repository', () => ({

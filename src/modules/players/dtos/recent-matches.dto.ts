@@ -1,176 +1,46 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { MatchDto, PlayerDto, StatsDto } from '@common/types/dtos/generic.dto'
+import { ApiProperty, OmitType } from '@nestjs/swagger'
 
-export class MapDto {
-	@ApiProperty()
-	id: string
-
-	@ApiProperty()
-	name: string
-
-	@ApiPropertyOptional()
-	img?: string
+class RecentMatchDto extends MatchDto {
+	@ApiProperty({ type: StatsDto })
+	stats: StatsDto
 }
 
-export class ModeDto {
-	@ApiProperty()
-	id: string
-
-	@ApiProperty()
-	name: string
-}
-
-export class AgentDto {
-	@ApiProperty()
-	id: string
-
-	@ApiProperty()
-	name: string
-
-	@ApiPropertyOptional()
-	img?: string
-}
-
-export class RankDto {
-	@ApiProperty()
-	id: number
-
-	@ApiProperty()
-	name: string
-
-	@ApiPropertyOptional()
-	img?: string
-}
-
-export class CustomizationDto {
-	@ApiProperty()
-	card?: string
-
-	@ApiPropertyOptional()
-	card_img?: string
-
-	@ApiProperty()
-	title?: string
-
-	@ApiProperty()
-	preferred_level_border?: string
-}
-
-export class PlayerDto {
-	@ApiProperty()
-	id: string
-
-	@ApiProperty()
-	name: string
-
-	@ApiProperty()
-	tag: string
-
-	@ApiProperty()
-	region: string
-
-	@ApiProperty()
-	level: number
-
-	@ApiProperty({ type: CustomizationDto })
-	customization: CustomizationDto
-
-	@ApiProperty({ type: RankDto })
-	rank: RankDto
-}
-
-export class PerformanceDto {
-	@ApiProperty()
-	player_id: string
-
-	@ApiProperty()
-	match_id: string
-
-	@ApiProperty()
-	team: string
-
-	@ApiProperty({ type: AgentDto })
-	agent: AgentDto
-
-	@ApiProperty()
-	score: number
-
-	@ApiProperty()
-	kills: number
-
-	@ApiProperty()
-	deaths: number
-
-	@ApiProperty()
-	assists: number
-
-	@ApiProperty()
-	damage_dealt: number
-
-	@ApiProperty()
-	damage_taken: number
-
-	@ApiProperty()
-	headshots: number
-
-	@ApiProperty()
-	bodyshots: number
-
-	@ApiProperty()
-	legshots: number
-
-	// @ApiProperty({ type: Object, nullable: true })
-	// ability_casts: Record<string, string>
-
-	// @ApiProperty({ type: Object, nullable: true })
-	// rank: RankDto
-
-	// @ApiProperty({ type: Object, nullable: true })
-	// behavior: Record<string, string>
-
-	// @ApiProperty({ type: Object, nullable: true })
-	// economy: Record<string, string>
-}
-
-export class MatchDto {
-	@ApiProperty()
-	id: string
-
-	@ApiProperty({ type: MapDto })
-	map: MapDto
-
-	@ApiProperty({ type: ModeDto })
-	mode: ModeDto
-
-	@ApiProperty()
-	date: Date
-
-	@ApiProperty()
-	winning_team: string
-
-	@ApiProperty()
-	stats: PerformanceDto
-}
-
-export class PayloadDto {
+class RecentMatchesPayloadDto {
 	@ApiProperty({ type: PlayerDto })
 	player: PlayerDto
 
-	@ApiProperty({ type: [MatchDto] })
-	matches: MatchDto[]
+	@ApiProperty({ type: [RecentMatchDto] })
+	matches: RecentMatchDto[]
 }
 
 export class GetRecentMatchesDto {
 	@ApiProperty()
 	message: string
 
-	@ApiProperty()
-	data: PayloadDto
+	@ApiProperty({ type: RecentMatchesPayloadDto })
+	data: RecentMatchesPayloadDto
+}
+
+class StoredMatchStatsDto extends OmitType(StatsDto, ['ability_casts', 'behavior', 'economy']) {}
+
+class StoredMatchDto extends MatchDto {
+	@ApiProperty({ type: StoredMatchStatsDto })
+	stats: StoredMatchStatsDto
+}
+
+class StoredMatchPayloadDto {
+	@ApiProperty({ type: PlayerDto })
+	player: PlayerDto
+
+	@ApiProperty({ type: [StoredMatchDto] })
+	matches: StoredMatchDto[]
 }
 
 export class GetStoredMatchesDto {
 	@ApiProperty()
 	message: string
 
-	@ApiProperty({ type: PayloadDto })
-	data: PayloadDto
+	@ApiProperty({ type: StoredMatchPayloadDto })
+	data: StoredMatchPayloadDto
 }

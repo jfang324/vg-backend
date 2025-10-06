@@ -7,6 +7,7 @@ import { ModeRepository } from '@modules/database/supabase_repositories/mode.rep
 import { PerformanceRepository } from '@modules/database/supabase_repositories/performance.repository'
 import { PlayerRepository } from '@modules/database/supabase_repositories/player.repository'
 import { LoggingService } from '@modules/logging/logging.service'
+import { RedisService } from '@modules/redis/redis.service'
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 
 @Injectable()
@@ -19,7 +20,8 @@ export class PlayersService {
 		private readonly modeRepository: ModeRepository,
 		private readonly playerRepository: PlayerRepository,
 		private readonly performanceRepository: PerformanceRepository,
-		private readonly loggingService: LoggingService
+		private readonly loggingService: LoggingService,
+		private readonly redisService: RedisService
 	) {}
 
 	/**
@@ -61,11 +63,18 @@ export class PlayersService {
 		])
 
 		//staticTablePromises must be completed first because dynamicTablePromises insert entities that reference the entities from staticTablePromises
-		staticTablePromises
+		void staticTablePromises
 			.then(() => dynamicTablePromises.then(() => this.performanceRepository.upsertMany(performances)))
-			.catch((error: Error) =>
-				this.loggingService.logDatabaseError('Unknown', `Failed to cached data: ${error.message}`)
-			)
+			.catch((error: Error) => this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message))
+
+		const rank_img = `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${currentPlayer.rank.id}/smallicon.png`
+		const card_img = `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`
+		const agent_img = agents.map((agent) => `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`)
+		const map_img = maps.map((map) => `https://media.valorant-api.com/maps/${map.id}/splash.png`)
+
+		const assets = [rank_img, card_img, ...agent_img, ...map_img]
+
+		this.redisService.setProfileCache(region, platform, name, tag, mode, assets)
 
 		return {
 			message: 'Successfully retrieved recent matches',
@@ -95,7 +104,7 @@ export class PlayersService {
 							(performance) => performance.player_id === currentPlayer.id
 						)
 
-						const { agent_id, ...performance } = relevantPerformances[index]
+						const { agent_id, match_id: _, player_id: __, ...performance } = relevantPerformances[index]
 						const stats = {
 							...performance,
 							agent: {
@@ -110,7 +119,10 @@ export class PlayersService {
 								...map,
 								img: `https://media.valorant-api.com/maps/${map.id}/splash.png`
 							},
-							mode,
+							mode: {
+								id: mode.id,
+								name: mode.name
+							},
 							stats
 						}
 					})
@@ -171,7 +183,7 @@ export class PlayersService {
 							return null
 						}
 
-						const { agent_id, ...performance } = performances[index]
+						const { agent_id, match_id: _, player_id: __, ...performance } = performances[index]
 						const stats = {
 							...performance,
 							agent: {
@@ -186,12 +198,30 @@ export class PlayersService {
 								...map,
 								img: `https://media.valorant-api.com/maps/${map.id}/splash.png`
 							},
-							mode,
+							mode: {
+								id: mode.id,
+								name: mode.name
+							},
 							stats
 						}
 					})
 					.filter((x) => x !== null)
 			}
 		}
+	}
+
+	/**
+	 * Get cached assets from the Redis cache
+	 * @param region The region to get assets from
+	 * @param platform The platform to get assets from
+	 * @param name The name of the player to get assets from
+	 * @param tag The tag of the player to get assets from
+	 * @param mode The mode to get assets from
+	 * @returns The assets associated with the player
+	 */
+	async getCachedAssets(region: string, platform: string, name: string, tag: string, mode: string) {
+		const assets = await this.redisService.getProfileCache(region, platform, name, tag, mode)
+
+		return assets || []
 	}
 }
