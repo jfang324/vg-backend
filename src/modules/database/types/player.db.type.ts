@@ -9,7 +9,7 @@ export type Player = {
 	customization: {
 		card: string | null
 		title: string | null
-		preferredLevelBorder: string | null
+		preferred_level_border: string | null
 	}
 	rank: {
 		id: number

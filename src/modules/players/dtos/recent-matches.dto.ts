@@ -22,7 +22,7 @@ export class GetRecentMatchesDto {
 	data: RecentMatchesPayloadDto
 }
 
-class StoredMatchStatsDto extends OmitType(StatsDto, ['ability_casts', 'behavior', 'economy']) {}
+class StoredMatchStatsDto extends OmitType(StatsDto, ['abilityCasts', 'behavior', 'economy']) {}
 
 class StoredMatchDto extends MatchDto {
 	@ApiProperty({ type: StoredMatchStatsDto })

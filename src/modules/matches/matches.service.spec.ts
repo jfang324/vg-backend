@@ -1,10 +1,16 @@
+import { mockAgents } from '@mocks/data/agents.mock'
+import { mockMaps } from '@mocks/data/maps.mock'
 import { mockMatchPerformances } from '@mocks/data/match-performances.mock'
-import { mockAgentRepository, mockAgents } from '@mocks/repositories/agent.repository.mock'
-import { mockMap, mockMapRepository } from '@mocks/repositories/map.repository.mock'
-import { mockMatch, mockMatchRepository } from '@mocks/repositories/match.repository.mock'
-import { mockMode, mockModeRepository } from '@mocks/repositories/mode.repository.mock'
-import { mockPerformanceRepository, mockPerformances } from '@mocks/repositories/performance.repository.mock'
-import { mockPlayerRepository, mockPlayers } from '@mocks/repositories/player.repository.mock'
+import { mockMatches } from '@mocks/data/matches.mock'
+import { mockModes } from '@mocks/data/modes.mock'
+import { mockPerformances } from '@mocks/data/performances.mock'
+import { mockPlayers } from '@mocks/data/players.mock'
+import { mockAgentRepository } from '@mocks/repositories/agent.repository.mock'
+import { mockMapRepository } from '@mocks/repositories/map.repository.mock'
+import { mockMatchRepository } from '@mocks/repositories/match.repository.mock'
+import { mockModeRepository } from '@mocks/repositories/mode.repository.mock'
+import { mockPerformanceRepository } from '@mocks/repositories/performance.repository.mock'
+import { mockPlayerRepository } from '@mocks/repositories/player.repository.mock'
 import { mockHenrikDevService } from '@mocks/services/henrik-dev.service.mock'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
 import { AxiosError } from 'axios'
@@ -67,10 +73,13 @@ describe('MatchesService', () => {
 	})
 
 	it('should retrieve performance data from database repositories if they are cached', async () => {
+		const mockMatch = mockMatches[0]
+		const mockMode = mockModes[0]
+		const mockMap = mockMaps[0]
 		mockMatchRepository.getById.mockResolvedValueOnce(mockMatch)
 		mockPerformanceRepository.getByMatchId.mockResolvedValueOnce(mockPerformances)
 		mockMapRepository.getById.mockResolvedValueOnce(mockMap)
-		mockModeRepository.getByName.mockResolvedValueOnce(mockMode)
+		mockModeRepository.getById.mockResolvedValueOnce(mockMode)
 		mockAgentRepository.getManyByIds.mockResolvedValueOnce(mockAgents)
 		mockPlayerRepository.getManyByIds.mockResolvedValueOnce(mockPlayers)
 
@@ -81,16 +90,17 @@ describe('MatchesService', () => {
 
 		expect(mockMatchRepository.getById).toHaveBeenCalledWith(mockMatch.id)
 		expect(mockPerformanceRepository.getByMatchId).toHaveBeenCalledWith(mockMatch.id)
-		expect(mockMapRepository.getById).toHaveBeenCalledWith(mockMatch.map_id)
-		expect(mockModeRepository.getById).toHaveBeenCalledWith(mockMatch.mode_id)
+		expect(mockMapRepository.getById).toHaveBeenCalledWith(mockMatch.mapId)
+		expect(mockModeRepository.getById).toHaveBeenCalledWith(mockMatch.modeId)
 		expect(mockAgentRepository.getManyByIds).toHaveBeenCalledWith(
-			mockPerformances.map((performance) => performance.agent_id)
+			mockPerformances.map((performance) => performance.agentId)
 		)
 	})
 
 	it('should retrieve performance data from HenrikDev API if they are not cached', async () => {
+		const mockMatch = mockMatches[0]
 		mockMatchRepository.getById.mockResolvedValueOnce(null)
-		mockHenrikDevService.getMatchByIdAndRegion.mockResolvedValueOnce(mockMatchPerformances as unknown as any)
+		mockHenrikDevService.getMatchByIdAndRegion.mockResolvedValueOnce(mockMatchPerformances)
 
 		await matchService.getMatch(mockMatch.id, 'na')
 		const { match, players, performances, maps, agents, modes } = mockMatchPerformances
@@ -114,6 +124,7 @@ describe('MatchesService', () => {
 	})
 
 	it('should throw an error if the HenrikDev API returns an error', async () => {
+		const mockMatch = mockMatches[0]
 		mockHenrikDevService.getMatchByIdAndRegion.mockRejectedValueOnce(new AxiosError('User not found', '404'))
 
 		try {
@@ -131,6 +142,7 @@ describe('MatchesService', () => {
 	})
 
 	it('should throw an error if the HenrikDev API returns a 403 error', async () => {
+		const mockMatch = mockMatches[0]
 		mockHenrikDevService.getMatchByIdAndRegion.mockRejectedValueOnce(new AxiosError('Forbidden', '403'))
 
 		try {

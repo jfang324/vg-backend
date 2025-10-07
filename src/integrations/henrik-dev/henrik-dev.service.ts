@@ -1,16 +1,15 @@
+import type { Match } from '@common/types/match.type'
+import type { Performance } from '@common/types/performance.type'
+import type { Player } from '@common/types/player.type'
 import { LoggingService } from '@modules/logging/logging.service'
 import { BadGatewayException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { AxiosError } from 'axios'
+import camelcaseKeys from 'camelcase-keys'
 import { HenrikDevClient } from './henrik-dev.client'
-import {
-	V1ValidatedStoredMatch,
-	V4MatchSchema,
-	ValidatedV1StoredMatch,
-	ValidatedV4Match,
-	type Match,
-	type Performance,
-	type Player
-} from './henrik-dev.schemas'
+import { V1StoredMatchSchema, V4MatchSchema, ValidatedV1StoredMatch, ValidatedV4Match } from './henrik-dev.schemas'
+import type { Agent } from './schemas/agent.schema'
+import type { Map as GameMap } from './schemas/map.schema'
+import type { Mode } from './schemas/mode.schema'
 
 @Injectable()
 export class HenrikDevService {
@@ -29,13 +28,19 @@ export class HenrikDevService {
 	 * @param limit The limit of matches to get
 	 * @returns Simplified match data, separated into matches, performances, maps, agents, and modes
 	 */
+	// eslint-disable-next-line complexity -- Data from HenrikDev is complex and transformation should be centralized
 	async getRecentMatches(region: string, platform: string, name: string, tag: string, mode: string, limit: number) {
 		try {
 			const response = await this.henrikDevClient.getRecentMatches(region, platform, name, tag, mode, limit)
-			const rawMatchData = response.data.data || []
-			const validatedMatchData: ValidatedV4Match[] = rawMatchData.map((match) => {
+			const data = response.data.data
+
+			if (!data) throw new BadGatewayException('No data returned')
+
+			const validatedMatchData: ValidatedV4Match[] = data.map((match) => {
 				try {
-					return V4MatchSchema.parse(match)
+					const camelCaseMatch = camelcaseKeys(match, { deep: true })
+
+					return V4MatchSchema.parse(camelCaseMatch)
 				} catch (error) {
 					this.loggingService.logValidationError(
 						'HenrikDev',
@@ -45,9 +50,9 @@ export class HenrikDevService {
 				}
 			})
 
-			const maps = new Map<string, { id: string; name: string }>()
-			const agents = new Map<string, { id: string; name: string }>()
-			const modes = new Map<string, { id: string; name: string; mode_type: string }>()
+			const maps = new Map<string, GameMap>()
+			const agents = new Map<string, Agent>()
+			const modes = new Map<string, Mode>()
 
 			const players: Player[] = []
 			const matches: Match[] = []
@@ -61,7 +66,7 @@ export class HenrikDevService {
 
 				for (const team of teams || []) {
 					if (team.won) {
-						winningTeam = team.team_id
+						winningTeam = team.teamId
 						break
 					}
 				}
@@ -74,15 +79,15 @@ export class HenrikDevService {
 				modes.set(metadata.queue.id, {
 					id: metadata.queue.id,
 					name: metadata.queue.name,
-					mode_type: metadata.queue.mode_type
+					modeType: metadata.queue.modeType
 				})
 
 				matches.push({
-					id: metadata.match_id,
-					map_id: metadata.map.id,
-					mode_id: metadata.queue.id,
-					date: metadata.started_at,
-					winning_team: winningTeam
+					id: metadata.matchId,
+					mapId: metadata.map.id,
+					modeId: metadata.queue.id,
+					date: new Date(metadata.startedAt),
+					winningTeam: winningTeam
 				})
 
 				for (const player of validatedMatch.players || []) {
@@ -96,26 +101,26 @@ export class HenrikDevService {
 						name: player.name,
 						tag: player.tag,
 						region: metadata.region,
-						level: player.account_level,
+						level: player.accountLevel,
 						customization: player.customization,
 						rank: player.tier
 					})
 
 					performances.push({
-						player_id: player.puuid,
-						match_id: metadata.match_id,
-						team: player.team_id,
-						agent_id: player.agent.id,
+						playerId: player.puuid,
+						matchId: metadata.matchId,
+						team: player.teamId,
+						agentId: player.agent.id,
 						score: player.stats.score,
 						kills: player.stats.kills,
 						deaths: player.stats.deaths,
 						assists: player.stats.assists,
-						damage_dealt: player.stats.damage.dealt,
-						damage_taken: player.stats.damage.received,
+						damageDealt: player.stats.damage.dealt,
+						damageTaken: player.stats.damage.received,
 						headshots: player.stats.headshots,
 						bodyshots: player.stats.bodyshots,
 						legshots: player.stats.legshots,
-						ability_casts: player.ability_casts,
+						abilityCasts: player.abilityCasts,
 						rank: player.tier,
 						behavior: player.behavior,
 						economy: player.economy
@@ -148,23 +153,28 @@ export class HenrikDevService {
 		}
 	}
 
-	/**
-	 * Get stored matches from the HenrikDev API with the provided filters and transforms the data into a more usable format
-	 * @param region The region to get matches from
-	 * @param name The name of the player to get matches from
-	 * @param tag The tag of the player to get matches from
-	 * @param mode The mode to get matches from
-	 * @param page The page of matches to get
-	 * @param limit The limit of matches to get
-	 * @returns Simplified match data, separated into matches, performances, maps, agents, and modes
-	 */
+	// /**
+	//  * Get stored matches from the HenrikDev API with the provided filters and transforms the data into a more usable format
+	//  * @param region The region to get matches from
+	//  * @param name The name of the player to get matches from
+	//  * @param tag The tag of the player to get matches from
+	//  * @param mode The mode to get matches from
+	//  * @param page The page of matches to get
+	//  * @param limit The limit of matches to get
+	//  * @returns Simplified match data, separated into matches, performances, maps, agents, and modes
+	//  */
 	async getStoredMatches(region: string, name: string, tag: string, mode: string, page: number, limit: number) {
 		try {
 			const response = await this.henrikDevClient.getStoredMatches(region, name, tag, mode, page, limit)
-			const rawStoredMatchData = response.data.data || []
-			const validatedStoredMatchData: ValidatedV1StoredMatch[] = rawStoredMatchData.map((match) => {
+			const data = response.data.data
+
+			if (!data) throw new BadGatewayException('No data returned')
+
+			const validatedStoredMatchData: ValidatedV1StoredMatch[] = data.map((match) => {
 				try {
-					return V1ValidatedStoredMatch.parse(match)
+					const camelCaseMatch = camelcaseKeys(match, { deep: true })
+
+					return V1StoredMatchSchema.parse(camelCaseMatch)
 				} catch (error) {
 					this.loggingService.logValidationError(
 						'HenrikDev',
@@ -175,9 +185,9 @@ export class HenrikDevService {
 			})
 
 			const playerId = validatedStoredMatchData[0].stats.puuid
-			const maps = new Map<string, { id: string; name: string }>()
-			const agents = new Map<string, { id: string; name: string }>()
-			const modes = new Map<string, { name: string }>()
+			const maps = new Map<string, GameMap>()
+			const agents = new Map<string, Agent>()
+			const modes = new Map<string, Partial<Mode>>()
 
 			const matches: Match[] = []
 			const performances: Performance[] = []
@@ -197,10 +207,10 @@ export class HenrikDevService {
 
 				matches.push({
 					id: metadata.id,
-					map_id: metadata.map.id,
-					mode_id: metadata.mode,
-					date: metadata.started_at,
-					winning_team: winningTeam
+					mapId: metadata.map.id,
+					modeId: metadata.mode,
+					date: new Date(metadata.startedAt),
+					winningTeam: winningTeam
 				})
 
 				agents.set(storedMatch.stats.character.id, {
@@ -209,29 +219,26 @@ export class HenrikDevService {
 				})
 
 				//Scrappy fix until API swaggaer is updated
-				const damage_dealt = storedMatch.stats.damage as { made: number; received: number }
+				const damage_dealt = storedMatch.stats.damage
 
 				performances.push({
-					player_id: storedMatch.stats.puuid,
-					match_id: metadata.id,
+					playerId: storedMatch.stats.puuid,
+					matchId: metadata.id,
 					team: storedMatch.stats.team,
-					agent_id: storedMatch.stats.character.id,
+					agentId: storedMatch.stats.character.id,
 					score: storedMatch.stats.score,
 					kills: storedMatch.stats.kills,
 					deaths: storedMatch.stats.deaths,
 					assists: storedMatch.stats.assists,
-					damage_dealt: damage_dealt.made,
-					damage_taken: damage_dealt.received,
+					damageDealt: damage_dealt.made,
+					damageTaken: damage_dealt.received,
 					headshots: storedMatch.stats.shots.head,
 					bodyshots: storedMatch.stats.shots.body,
 					legshots: storedMatch.stats.shots.leg,
-					ability_casts: undefined,
 					rank: {
 						id: storedMatch.stats.tier,
 						name: 'N/A'
-					},
-					behavior: undefined,
-					economy: undefined
+					}
 				})
 			}
 
@@ -260,21 +267,24 @@ export class HenrikDevService {
 		}
 	}
 
-	/**
-	 * Get a match by its id and region
-	 * @param id The id of the match
-	 * @param region The region of the match
-	 * @returns The simplified data from the HenrikDev API
-	 **/
+	// /**
+	//  * Get a match by its id and region
+	//  * @param id The id of the match
+	//  * @param region The region of the match
+	//  * @returns The simplified data from the HenrikDev API
+	//  **/
 	async getMatchByIdAndRegion(id: string, region: string) {
 		try {
 			const response = await this.henrikDevClient.getMatchByIdAndRegion(id, region)
-			const rawMatchData = response.data.data
-			const validatedMatchData: ValidatedV4Match = V4MatchSchema.parse(rawMatchData)
+			const data = response.data.data
 
-			const maps = new Map<string, { id: string; name: string }>()
-			const agents = new Map<string, { id: string; name: string }>()
-			const modes = new Map<string, { id: string; name: string; mode_type: string }>()
+			if (!data) throw new BadGatewayException('No data returned')
+
+			const validatedMatchData: ValidatedV4Match = V4MatchSchema.parse(camelcaseKeys(data, { deep: true }))
+
+			const maps = new Map<string, GameMap>()
+			const agents = new Map<string, Agent>()
+			const modes = new Map<string, Mode>()
 
 			const players: Player[] = []
 			const performances: Performance[] = []
@@ -286,17 +296,17 @@ export class HenrikDevService {
 
 			for (const team of teams || []) {
 				if (team.won) {
-					winningTeam = team.team_id
+					winningTeam = team.teamId
 					break
 				}
 			}
 
 			const match = {
-				id: metadata.match_id,
-				map_id: metadata.map.id,
-				mode_id: metadata.queue.id,
-				date: metadata.started_at,
-				winning_team: winningTeam
+				id: metadata.matchId,
+				mapId: metadata.map.id,
+				modeId: metadata.queue.id,
+				date: new Date(metadata.startedAt),
+				winningTeam: winningTeam
 			}
 
 			maps.set(metadata.map.id, {
@@ -307,10 +317,10 @@ export class HenrikDevService {
 			modes.set(metadata.queue.id, {
 				id: metadata.queue.id,
 				name: metadata.queue.name,
-				mode_type: metadata.queue.mode_type
+				modeType: metadata.queue.modeType
 			})
 
-			for (const player of validatedMatchData.players || []) {
+			for (const player of validatedMatchData.players) {
 				agents.set(player.agent.id, {
 					id: player.agent.id,
 					name: player.agent.name
@@ -321,26 +331,26 @@ export class HenrikDevService {
 					name: player.name,
 					tag: player.tag,
 					region: metadata.region,
-					level: player.account_level,
+					level: player.accountLevel,
 					customization: player.customization,
 					rank: player.tier
 				})
 
 				performances.push({
-					player_id: player.puuid,
-					match_id: metadata.match_id,
-					team: player.team_id,
-					agent_id: player.agent.id,
+					playerId: player.puuid,
+					matchId: metadata.matchId,
+					team: player.teamId,
+					agentId: player.agent.id,
 					score: player.stats.score,
 					kills: player.stats.kills,
 					deaths: player.stats.deaths,
 					assists: player.stats.assists,
-					damage_dealt: player.stats.damage.dealt,
-					damage_taken: player.stats.damage.received,
+					damageDealt: player.stats.damage.dealt,
+					damageTaken: player.stats.damage.received,
 					headshots: player.stats.headshots,
 					bodyshots: player.stats.bodyshots,
 					legshots: player.stats.legshots,
-					ability_casts: player.ability_casts,
+					abilityCasts: player.abilityCasts,
 					rank: player.tier,
 					behavior: player.behavior,
 					economy: player.economy

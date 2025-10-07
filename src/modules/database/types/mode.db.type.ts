@@ -1,5 +1,5 @@
 export type Mode = {
 	id: string
 	name: string
-	modeType: string
+	mode_type: string
 }

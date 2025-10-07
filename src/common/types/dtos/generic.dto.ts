@@ -36,9 +36,6 @@ class RankDto {
 
 	@ApiProperty()
 	name: string
-
-	@ApiPropertyOptional()
-	img?: string
 }
 
 class CustomizationDto {
@@ -49,10 +46,15 @@ class CustomizationDto {
 	title: string
 
 	@ApiProperty()
-	preferred_level_border: string
+	preferredLevelBorder: string
 
 	@ApiProperty()
-	card_img?: string
+	cardImg?: string
+}
+
+class FullRank extends RankDto {
+	@ApiPropertyOptional()
+	img?: string
 }
 
 export class PlayerDto {
@@ -74,8 +76,8 @@ export class PlayerDto {
 	@ApiProperty({ type: CustomizationDto })
 	customization: CustomizationDto
 
-	@ApiProperty({ type: RankDto })
-	rank: RankDto
+	@ApiProperty({ type: FullRank })
+	rank: FullRank
 }
 
 class AbilityCastsDto {
@@ -102,13 +104,13 @@ class FriendlyFireDto {
 
 class BehaviourDto {
 	@ApiProperty()
-	afk_rounds: number
+	afkRounds: number
 
 	@ApiProperty({ type: FriendlyFireDto })
-	friendly_fire: FriendlyFireDto
+	friendlyFire: FriendlyFireDto
 
 	@ApiProperty()
-	rounds_in_spawn: number
+	roundsInSpawn: number
 }
 
 class SubEconomyDto {
@@ -144,10 +146,10 @@ export class StatsDto {
 	assists: number
 
 	@ApiProperty()
-	damage_dealt: number
+	damageDealt: number
 
 	@ApiProperty()
-	damage_taken: number
+	damageTaken: number
 
 	@ApiProperty()
 	headshots: number
@@ -165,7 +167,7 @@ export class StatsDto {
 	rank: RankDto
 
 	@ApiProperty({ type: AbilityCastsDto, nullable: true })
-	ability_casts?: AbilityCastsDto
+	abilityCasts?: AbilityCastsDto
 
 	@ApiProperty({ type: BehaviourDto, nullable: true })
 	behavior?: BehaviourDto
@@ -188,5 +190,5 @@ export class MatchDto {
 	date: Date
 
 	@ApiProperty()
-	winning_team: string
+	winningTeam: string
 }

@@ -1,10 +1,12 @@
+import { mockModes } from '@mocks/data/modes.mock'
+import { mockPlayers } from '@mocks/data/players.mock'
 import { mockRecentMatchesData } from '@mocks/data/recent-matches.mock'
 import { mockAgentRepository } from '@mocks/repositories/agent.repository.mock'
 import { mockMapRepository } from '@mocks/repositories/map.repository.mock'
 import { mockMatchRepository } from '@mocks/repositories/match.repository.mock'
-import { mockMode, mockModeRepository } from '@mocks/repositories/mode.repository.mock'
+import { mockModeRepository } from '@mocks/repositories/mode.repository.mock'
 import { mockPerformanceRepository } from '@mocks/repositories/performance.repository.mock'
-import { mockPlayer, mockPlayerRepository } from '@mocks/repositories/player.repository.mock'
+import { mockPlayerRepository } from '@mocks/repositories/player.repository.mock'
 import { mockHenrikDevService } from '@mocks/services/henrik-dev.service.mock'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
 import { mockRedisService } from '@mocks/services/redis.service.mock'
@@ -70,7 +72,7 @@ describe('PlayersService', () => {
 	})
 
 	it('should get recent matches and cache performances and static data', async () => {
-		mockHenrikDevService.getRecentMatches.mockResolvedValueOnce(mockRecentMatchesData as unknown as any)
+		mockHenrikDevService.getRecentMatches.mockResolvedValueOnce(mockRecentMatchesData)
 
 		await playerService.getRecentMatches('na', 'pc', 'Hexennacht', 'NA1', 'competitive', 10)
 		const { matches, players, performances, maps, agents, modes } = mockRecentMatchesData
@@ -89,9 +91,7 @@ describe('PlayersService', () => {
 		expect(mockMapRepository.upsertMany).toHaveBeenCalledWith(maps)
 		expect(mockAgentRepository.upsertMany).toHaveBeenCalledWith(agents)
 		expect(mockModeRepository.upsertMany).toHaveBeenCalledWith(modes)
-		expect(mockMatchRepository.upsertMany).toHaveBeenCalledWith(
-			matches.map((match) => ({ ...match, date: new Date(match.date) }))
-		)
+		expect(mockMatchRepository.upsertMany).toHaveBeenCalledWith(matches)
 		expect(mockPlayerRepository.upsertMany).toHaveBeenCalledWith(players)
 		expect(mockPerformanceRepository.upsertMany).toHaveBeenCalledWith(performances)
 	})
@@ -145,6 +145,8 @@ describe('PlayersService', () => {
 	})
 
 	it('should return a list of stored matches', async () => {
+		const mockPlayer = mockPlayers[0]
+		const mockMode = mockModes[0]
 		mockPlayerRepository.getById.mockResolvedValueOnce(mockPlayer)
 		mockModeRepository.getByName.mockResolvedValueOnce(mockMode)
 

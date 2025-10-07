@@ -24,6 +24,7 @@ describe('LoggingService', () => {
 	it('should log the error message and status code', () => {
 		const serviceName = 'test service'
 		const apiError = new AxiosError('test error', '500')
+
 		loggingService.logApiError(serviceName, apiError)
 
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(serviceName))
@@ -42,11 +43,13 @@ describe('LoggingService', () => {
 
 	it('should log the error message and repository', () => {
 		const repository = 'test repository'
+		const operation = 'test operation'
 		const error = 'test error'
 
-		loggingService.logDatabaseError(repository, error)
+		loggingService.logDatabaseError(repository, operation, error)
 
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(repository))
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(operation))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
 	})
 
