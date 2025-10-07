@@ -42,7 +42,7 @@ bootstrap()
 		const mode = process.env.NODE_ENV || 'development'
 		const baseUrl = process.env.BASE_URL || 'http://localhost'
 
-		// eslint-disable-next-line no-console -- one time log on startup
+		// eslint-disable-next-line no-console -- This is a startup message
 		console.log(
 			`VG Backend is running in ${mode} mode on ${baseUrl}:${port} the api version is ${process.env.DEFAULT_VERSION}`
 		)

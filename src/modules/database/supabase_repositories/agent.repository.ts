@@ -4,6 +4,7 @@ import { LoggingService } from '@modules/logging/logging.service'
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { AgentRepositoryInterface } from '../interfaces/agent.repository.interface'
+import { Agent as DB_Agent } from '../types/agent.db.type'
 
 @Injectable()
 export class AgentRepository implements AgentRepositoryInterface {
@@ -13,6 +14,30 @@ export class AgentRepository implements AgentRepositoryInterface {
 		@Inject('SUPABASE_CLIENT') private readonly supabase: SupabaseClient<Database>,
 		private readonly loggingService: LoggingService
 	) {}
+
+	/**
+	 * Transform a database agent into a domain agent
+	 * @param dbAgent The database agent to transform
+	 * @returns The transformed agent
+	 */
+	private mapDbToDomain(dbAgent: DB_Agent): Agent {
+		return {
+			id: dbAgent.id,
+			name: dbAgent.name
+		}
+	}
+
+	/**
+	 * Transform a domain agent into a database agent
+	 * @param agent The domain agent to transform
+	 * @returns The transformed agent
+	 */
+	private mapDomainToDb(agent: Agent): DB_Agent {
+		return {
+			id: agent.id,
+			name: agent.name
+		}
+	}
 
 	/**
 	 * On module init, retrieve all agents from the database and store them locally
@@ -25,7 +50,12 @@ export class AgentRepository implements AgentRepositoryInterface {
 			throw new InternalServerErrorException(`Failed to retrieve agents from database: ${error.message}`)
 		}
 
-		data.map((agent) => this.localAgents.set(agent.id, agent))
+		const dbAgents = data
+		const agents = dbAgents.map((agent) => this.mapDbToDomain(agent))
+
+		for (const agent of agents) {
+			this.localAgents.set(agent.id, agent)
+		}
 	}
 
 	/**
@@ -40,9 +70,11 @@ export class AgentRepository implements AgentRepositoryInterface {
 			return agents
 		}
 
+		const dbAgents = newAgents.map((agent) => this.mapDomainToDb(agent))
+
 		const { data: _, error } = await this.supabase
 			.from('agents')
-			.upsert(agents, { onConflict: 'id', ignoreDuplicates: true })
+			.upsert(dbAgents, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
 			this.loggingService.logDatabaseError('Agent', 'upsertMany', error.message)
@@ -60,10 +92,10 @@ export class AgentRepository implements AgentRepositoryInterface {
 	 * @returns The found agents
 	 */
 	async getManyByIds(ids: string[]): Promise<Agent[]> {
-		const agents = ids.map((id) => this.localAgents.get(id)).filter((agent) => !!agent)
+		const cachedAgents = ids.map((id) => this.localAgents.get(id)).filter((agent) => !!agent)
 
-		if (agents.length === ids.length) {
-			return agents
+		if (cachedAgents.length === ids.length) {
+			return cachedAgents
 		}
 
 		const { data, error } = await this.supabase.from('agents').select('*').in('id', ids)
@@ -73,8 +105,10 @@ export class AgentRepository implements AgentRepositoryInterface {
 			return []
 		}
 
-		data.map((agent) => this.localAgents.set(agent.id, agent))
+		const agents = data.map((agent) => this.mapDbToDomain(agent))
 
-		return data
+		agents.map((agent) => this.localAgents.set(agent.id, agent))
+
+		return agents
 	}
 }

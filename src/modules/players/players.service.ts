@@ -67,12 +67,12 @@ export class PlayersService {
 			.then(() => dynamicTablePromises.then(() => this.performanceRepository.upsertMany(performances)))
 			.catch((error: Error) => this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message))
 
-		const rank_img = `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${currentPlayer.rank.id}/smallicon.png`
-		const card_img = `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`
-		const agent_img = agents.map((agent) => `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`)
-		const map_img = maps.map((map) => `https://media.valorant-api.com/maps/${map.id}/splash.png`)
+		const rankImg = `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${currentPlayer.rank.id}/smallicon.png`
+		const cardImg = `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`
+		const agentImgs = agents.map((agent) => `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`)
+		const mapImgs = maps.map((map) => `https://media.valorant-api.com/maps/${map.id}/splash.png`)
 
-		const assets = [rank_img, card_img, ...agent_img, ...map_img]
+		const assets = [rankImg, cardImg, ...agentImgs, ...mapImgs]
 
 		this.redisService.setProfileCache(region, platform, name, tag, mode, assets)
 
@@ -87,29 +87,29 @@ export class PlayersService {
 					},
 					customization: {
 						...currentPlayer.customization,
-						card_img: `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`
+						cardImg: `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`
 					}
 				},
 				matches: matches
 					.map((match, index) => {
-						const { map_id, mode_id, ...rest } = match
-						const map = mapLookup.get(map_id)
-						const mode = modeLookup.get(mode_id)
+						const { mapId, modeId, ...rest } = match
+						const map = mapLookup.get(mapId)
+						const mode = modeLookup.get(modeId)
 
 						if (!map || !mode) {
 							return null
 						}
 
 						const relevantPerformances = performances.filter(
-							(performance) => performance.player_id === currentPlayer.id
+							(performance) => performance.playerId === currentPlayer.id
 						)
 
-						const { agent_id, match_id: _, player_id: __, ...performance } = relevantPerformances[index]
+						const { agentId, matchId: _, playerId: __, ...performance } = relevantPerformances[index]
 						const stats = {
 							...performance,
 							agent: {
-								...agentLookup.get(agent_id)!,
-								img: `https://media.valorant-api.com/agents/${agentLookup.get(agent_id)!.id}/displayicon.png`
+								...agentLookup.get(agentId)!,
+								img: `https://media.valorant-api.com/agents/${agentLookup.get(agentId)!.id}/displayicon.png`
 							}
 						}
 
@@ -131,16 +131,16 @@ export class PlayersService {
 		}
 	}
 
-	/**
-	 * Get stored matches from the HenrikDev API and transforms the data into a more usable format
-	 * @param region The region to get matches from
-	 * @param name The name of the player to get matches from
-	 * @param tag The tag of the player to get matches from
-	 * @param mode The mode to get matches from
-	 * @param page The page of matches to get
-	 * @param limit The limit of matches to get
-	 * @returns The simplified data from the HenrikDev API
-	 */
+	// /**
+	//  * Get stored matches from the HenrikDev API and transforms the data into a more usable format
+	//  * @param region The region to get matches from
+	//  * @param name The name of the player to get matches from
+	//  * @param tag The tag of the player to get matches from
+	//  * @param mode The mode to get matches from
+	//  * @param page The page of matches to get
+	//  * @param limit The limit of matches to get
+	//  * @returns The simplified data from the HenrikDev API
+	//  */
 	async getStoredMatches(region: string, name: string, tag: string, mode: string, page: number, limit: number) {
 		const data = await this.henrikDevService.getStoredMatches(region, name, tag, mode, page, limit)
 
@@ -152,10 +152,10 @@ export class PlayersService {
 
 		const agentLookup = new Map(agents.map((agent) => [agent.id, agent]))
 		const mapLookup = new Map(maps.map((map) => [map.id, map]))
-		const modeLookup = new Map<string, Mode>()
+		const modeLookup = new Map<string, Partial<Mode>>()
 
-		const fullModes = await Promise.all(modes.map((mode) => this.modeRepository.getByName(mode.name)))
-		fullModes.map((mode) => modeLookup.set(mode.name, mode))
+		const fullModes = await Promise.all(modes.map((mode) => this.modeRepository.getByName(mode.name!)))
+		fullModes.map((mode) => modeLookup.set(mode!.name, mode!))
 
 		const player = await this.playerRepository.getById(playerId)
 
@@ -170,25 +170,25 @@ export class PlayersService {
 					},
 					customization: {
 						...player.customization,
-						card_img: `https://media.valorant-api.com/playercards/${player.customization.card}/wideart.png`
+						cardImg: `https://media.valorant-api.com/playercards/${player.customization.card}/wideart.png`
 					}
 				},
 				matches: matches
 					.map((match, index) => {
-						const { map_id, mode_id, ...rest } = match
-						const map = mapLookup.get(map_id)
-						const mode = modeLookup.get(mode_id)
+						const { mapId, modeId, ...rest } = match
+						const map = mapLookup.get(mapId)
+						const mode = modeLookup.get(modeId)
 
 						if (!map || !mode) {
 							return null
 						}
 
-						const { agent_id, match_id: _, player_id: __, ...performance } = performances[index]
+						const { agentId, matchId: _, playerId: __, ...performance } = performances[index]
 						const stats = {
 							...performance,
 							agent: {
-								...agentLookup.get(agent_id)!,
-								img: `https://media.valorant-api.com/agents/${agentLookup.get(agent_id)!.id}/displayicon.png`
+								...agentLookup.get(agentId)!,
+								img: `https://media.valorant-api.com/agents/${agentLookup.get(agentId)!.id}/displayicon.png`
 							}
 						}
 

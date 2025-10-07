@@ -1,5 +1,5 @@
-import { Agent } from '@common/types/agent.type'
 import { Database } from '@generated/supabase/database.types'
+import { mockAgents, mockDbAgents } from '@mocks/data/agents.mock'
 import { mockLoggingService } from '@mocks/services/logging.service.mock'
 import { mockFrom, mockIn, mockSelect, mockSupabaseClient, mockUpsert } from '@mocks/supabase.mock'
 import { SupabaseClient } from '@supabase/supabase-js'
@@ -27,33 +27,25 @@ describe('AgentRepository', () => {
 		jest.clearAllMocks()
 	})
 
-	it('it should insert a call upsert if the agent is not cached', async () => {
-		const mockAgents: Agent[] = [{ id: 'test-agent-id', name: 'test-agent-name' }]
-
+	it('should upsert to the database if the agents are not cached', async () => {
 		const response = await agentRepository.upsertMany(mockAgents)
 
 		expect(mockFrom).toHaveBeenCalledWith('agents')
-		expect(mockUpsert).toHaveBeenCalledWith(mockAgents, { onConflict: 'id', ignoreDuplicates: true })
+		expect(mockUpsert).toHaveBeenCalledWith(mockDbAgents, expect.anything())
 		expect(response).toEqual(mockAgents)
 	})
 
-	it('it should not insert a call upsert if the agent is cached', async () => {
-		const mockAgents: Agent[] = [{ id: 'test-agent-id', name: 'test-agent-name' }]
-
-		const response = await agentRepository.upsertMany(mockAgents)
+	it('should not upsert to the database if the agents are cached', async () => {
+		const response1 = await agentRepository.upsertMany(mockAgents)
 		const response2 = await agentRepository.upsertMany(mockAgents)
 
-		expect(mockFrom).toHaveBeenCalledWith('agents')
-		expect(mockFrom).toHaveBeenCalledTimes(1)
 		expect(mockUpsert).toHaveBeenCalledTimes(1)
-		expect(mockUpsert).toHaveBeenCalledWith(mockAgents, { onConflict: 'id', ignoreDuplicates: true })
-		expect(response).toEqual(mockAgents)
-		expect(response2).toEqual(mockAgents)
+		expect(response1).toEqual(response2)
 	})
 
-	it('it should throw an error if the upsertMany call fails', async () => {
-		const mockAgents: Agent[] = [{ id: 'test-agent-id', name: 'test-agent-name' }]
-		mockUpsert.mockReturnValueOnce({ error: new Error('Something went wrong') })
+	it('should log an error if the upsertMany call fails', async () => {
+		const mockError = { error: new Error('Something went wrong') }
+		mockUpsert.mockReturnValueOnce(mockError)
 
 		const response = await agentRepository.upsertMany(mockAgents)
 
@@ -62,33 +54,38 @@ describe('AgentRepository', () => {
 		expect(response).toEqual(mockAgents)
 	})
 
-	it('it should find many agents by their ids', async () => {
-		const mockAgents: Agent[] = [
-			{ id: 'test-agent-id', name: 'test-agent-name' },
-			{ id: 'test-agent-id-2', name: 'test-agent-name-2' }
-		]
-		mockIn.mockReturnValueOnce({ data: mockAgents })
+	it('should return the full agents from the database if the ids are not cached', async () => {
+		mockIn.mockReturnValueOnce({ data: mockDbAgents })
+		const mockIds = mockAgents.map((agent) => agent.id)
 
-		const response = await agentRepository.getManyByIds(mockAgents.map((agent) => agent.id))
+		const response = await agentRepository.getManyByIds(mockIds)
 
 		expect(mockFrom).toHaveBeenCalledWith('agents')
-		expect(mockFrom).toHaveBeenCalledTimes(1)
 		expect(mockSelect).toHaveBeenCalledWith('*')
-		expect(mockIn).toHaveBeenCalledWith(
-			'id',
-			mockAgents.map((agent) => agent.id)
-		)
+		expect(mockIn).toHaveBeenCalledWith('id', mockIds)
 		expect(response).toEqual(mockAgents)
 	})
 
-	it('it should log an error if the findManyByIds call fails', async () => {
-		const mockAgents: Agent[] = [{ id: 'test-agent-id', name: 'test-agent-name' }]
-		mockIn.mockReturnValueOnce({ data: mockAgents, error: new Error('Something went wrong') })
+	it('should return the full agents from the cache if the ids are cached', async () => {
+		mockIn.mockReturnValueOnce({ data: mockDbAgents })
+		const mockIds = mockAgents.map((agent) => agent.id)
 
-		const response = await agentRepository.getManyByIds(['test-agent-id'])
+		const response1 = await agentRepository.getManyByIds(mockIds)
+		const response2 = await agentRepository.getManyByIds(mockIds)
 
-		expect(mockFrom).toHaveBeenCalledWith('agents')
 		expect(mockFrom).toHaveBeenCalledTimes(1)
+		expect(mockSelect).toHaveBeenCalledTimes(1)
+		expect(mockIn).toHaveBeenCalledTimes(1)
+		expect(response1).toEqual(response2)
+	})
+
+	it('should log an error if the findManyByIds call fails', async () => {
+		const mockError = { error: new Error('Something went wrong') }
+		const mockIds = mockAgents.map((agent) => agent.id)
+		mockIn.mockReturnValueOnce(mockError)
+
+		const response = await agentRepository.getManyByIds(mockIds)
+
 		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
 			'Agent',
 			'getManyByIds',

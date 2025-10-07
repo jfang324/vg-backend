@@ -1,41 +1,41 @@
 export type Performance = {
-	playerId: string
-	matchId: string
+	player_id: string
+	match_id: string
 	team: string
-	agentId: string
+	agent_id: string
 	score: number
 	kills: number
 	deaths: number
 	assists: number
-	damageDealt: number
-	damageTaken: number
+	damage_dealt: number
+	damage_taken: number
 	headshots: number
 	bodyshots: number
 	legshots: number
-	rank: {
+	rank?: {
 		id: number
 		name: string
 	}
-	abilityCasts?: {
+	ability_casts?: {
 		grenade: number
 		ability1: number
 		ability2: number
 		ultimate: number
 	}
 	behavior?: {
-		afkRounds: number
-		friendlyFire: {
+		afk_rounds: number
+		friendly_fire: {
 			incoming: number
 			outgoing: number
 		}
-		roundsInSpawn: number
+		rounds_in_spawn: number
 	}
 	economy?: {
 		spent: {
 			overall: number
 			average: number
 		}
-		loadoutValue: {
+		loadout_value: {
 			overall: number
 			average: number
 		}

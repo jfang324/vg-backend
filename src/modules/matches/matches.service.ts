@@ -31,12 +31,12 @@ export class MatchesService {
 		const exists = await this.matchRepository.getById(id)
 
 		if (exists) {
-			const { map_id, mode_id, ...match } = exists
+			const { mapId, modeId, ...match } = exists
 
 			const batch_1 = await Promise.all([
 				this.performanceRepository.getByMatchId(id),
-				this.mapRepository.getById(map_id),
-				this.modeRepository.getById(mode_id)
+				this.mapRepository.getById(mapId),
+				this.modeRepository.getById(modeId)
 			])
 
 			const performances = batch_1[0]
@@ -44,8 +44,8 @@ export class MatchesService {
 			const mode = batch_1[2]
 
 			const batch_2 = await Promise.all([
-				this.playerRepository.getManyByIds(performances.map((performance) => performance.player_id)),
-				this.agentRepository.getManyByIds(performances.map((performance) => performance.agent_id))
+				this.playerRepository.getManyByIds(performances.map((performance) => performance.playerId)),
+				this.agentRepository.getManyByIds(performances.map((performance) => performance.agentId))
 			])
 
 			const players = batch_2[0]
@@ -58,21 +58,24 @@ export class MatchesService {
 						...match,
 						map: {
 							...map,
-							img: `https://media.valorant-api.com/maps/${map_id}/splash.png`
+							img: `https://media.valorant-api.com/maps/${mapId}/splash.png`
 						},
-						mode
+						mode: {
+							id: mode!.id,
+							name: mode!.name
+						}
 					},
 					players: performances.map((performance) => {
-						const { match_id: _, player_id, agent_id, rank: __, ...rest } = performance
-						const player = players.find((player) => player.id === player_id)!
-						const agent = agents.find((agent) => agent.id === agent_id)!
+						const { matchId: _, playerId, agentId, rank: __, ...rest } = performance
+						const player = players.find((player) => player.id === playerId)!
+						const agent = agents.find((agent) => agent.id === agentId)!
 
 						return {
 							player: {
 								...player,
 								customization: {
 									...player.customization,
-									card_img: `https://media.valorant-api.com/agents/${player.customization.card}/displayicon.png`
+									cardImg: `https://media.valorant-api.com/agents/${player.customization.card}/displayicon.png`
 								}
 							},
 							stats: rest,
@@ -97,7 +100,7 @@ export class MatchesService {
 		const playerLookup = new Map(players.map((player) => [player.id, player]))
 		const agentLookup = new Map(agents.map((agent) => [agent.id, agent]))
 
-		const { map_id: _, mode_id: __, ...rest } = match
+		const { mapId: _, modeId: __, ...rest } = match
 
 		const staticTablePromises = Promise.all([
 			this.mapRepository.upsertMany(maps),
@@ -120,34 +123,39 @@ export class MatchesService {
 			.then(() => dynamicTablePromises.then(() => this.performanceRepository.upsertMany(performances)))
 			.catch((error: Error) => this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message))
 
+		const mode = modes.find((mode) => mode.id === match.modeId)
+
 		return {
 			message: 'Successfully retrieved match',
 			data: {
 				match: {
 					...rest,
 					map: {
-						...maps.find((map) => map.id === match.map_id),
-						img: `https://media.valorant-api.com/maps/${match.map_id}/splash.png`
+						...maps.find((map) => map.id === match.mapId),
+						img: `https://media.valorant-api.com/maps/${match.mapId}/splash.png`
 					},
-					mode: modes.find((mode) => mode.id === match.mode_id)
+					mode: {
+						id: mode!.id,
+						name: mode!.name
+					}
 				},
 				players: performances.map((performance) => {
-					const { match_id: _, player_id, agent_id, rank: __, ...rest } = performance
-					const player = playerLookup.get(player_id)!
-					const agent = agentLookup.get(agent_id)!
+					const { matchId: _, playerId, agentId, rank: __, ...rest } = performance
+					const player = playerLookup.get(playerId)!
+					const agent = agentLookup.get(agentId)!
 
 					return {
 						player: {
 							...player,
 							customization: {
 								...player.customization,
-								card_img: `https://media.valorant-api.com/agents/${player.customization.card}/displayicon.png`
+								cardImg: `https://media.valorant-api.com/agents/${player.customization.card}/displayicon.png`
 							}
 						},
 						stats: rest,
 						agent: {
 							...agent,
-							img: `https://media.valorant-api.com/agents/${agentLookup.get(agent_id)!.id}/displayicon.png`
+							img: `https://media.valorant-api.com/agents/${agentLookup.get(agentId)!.id}/displayicon.png`
 						}
 					}
 				})

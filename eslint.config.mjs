@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['eslint.config.mjs, eslint.complexity.config.mjs'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -58,5 +58,11 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/unbound-method': 'off',
     },
+  },{
+    files: ['src/**/*.service.ts'],
+    rules: {
+      'complexity': ['warn', 10],
+      'max-depth': ['warn', 5],
+    }
   }
 );
