@@ -4,4 +4,6 @@ export type Match = {
 	modeId: string
 	date: Date
 	winningTeam: string
+	redRounds: number
+	blueRounds: number
 }

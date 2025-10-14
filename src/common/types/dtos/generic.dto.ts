@@ -191,4 +191,10 @@ export class MatchDto {
 
 	@ApiProperty()
 	winningTeam: string
+
+	@ApiProperty()
+	redRounds: number
+
+	@ApiProperty()
+	blueRounds: number
 }
