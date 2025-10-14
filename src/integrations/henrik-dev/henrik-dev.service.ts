@@ -63,11 +63,20 @@ export class HenrikDevService {
 
 				const teams = validatedMatch.teams
 				let winningTeam = 'draw'
+				let redRounds = 0
+				let blueRounds = 0
 
 				for (const team of teams || []) {
 					if (team.won) {
 						winningTeam = team.teamId
-						break
+					}
+
+					if (team.teamId === 'Red') {
+						redRounds += team.rounds.won
+					}
+
+					if (team.teamId === 'Blue') {
+						blueRounds += team.rounds.won
 					}
 				}
 
@@ -87,7 +96,9 @@ export class HenrikDevService {
 					mapId: metadata.map.id,
 					modeId: metadata.queue.id,
 					date: new Date(metadata.startedAt),
-					winningTeam: winningTeam
+					winningTeam: winningTeam,
+					redRounds,
+					blueRounds
 				})
 
 				for (const player of validatedMatch.players || []) {
@@ -195,6 +206,8 @@ export class HenrikDevService {
 			for (const storedMatch of validatedStoredMatchData) {
 				const metadata = storedMatch.meta
 				const winningTeam = storedMatch.teams.red > storedMatch.teams.blue ? 'Red' : 'Blue'
+				const redRounds = storedMatch.teams.red
+				const blueRounds = storedMatch.teams.blue
 
 				maps.set(metadata.map.id, {
 					id: metadata.map.id,
@@ -210,7 +223,9 @@ export class HenrikDevService {
 					mapId: metadata.map.id,
 					modeId: metadata.mode,
 					date: new Date(metadata.startedAt),
-					winningTeam: winningTeam
+					winningTeam: winningTeam,
+					redRounds,
+					blueRounds
 				})
 
 				agents.set(storedMatch.stats.character.id, {
@@ -273,6 +288,7 @@ export class HenrikDevService {
 	//  * @param region The region of the match
 	//  * @returns The simplified data from the HenrikDev API
 	//  **/
+	// eslint-disable-next-line complexity -- Data from HenrikDev is complex and transformation should be centralized
 	async getMatchByIdAndRegion(id: string, region: string) {
 		try {
 			const response = await this.henrikDevClient.getMatchByIdAndRegion(id, region)
@@ -293,11 +309,20 @@ export class HenrikDevService {
 			const teams = validatedMatchData.teams
 
 			let winningTeam = 'draw'
+			let redRounds = 0
+			let blueRounds = 0
 
 			for (const team of teams || []) {
 				if (team.won) {
 					winningTeam = team.teamId
-					break
+				}
+
+				if (team.teamId === 'Red') {
+					redRounds += team.rounds.won
+				}
+
+				if (team.teamId === 'Blue') {
+					blueRounds += team.rounds.won
 				}
 			}
 
@@ -306,7 +331,9 @@ export class HenrikDevService {
 				mapId: metadata.map.id,
 				modeId: metadata.queue.id,
 				date: new Date(metadata.startedAt),
-				winningTeam: winningTeam
+				winningTeam: winningTeam,
+				redRounds,
+				blueRounds
 			}
 
 			maps.set(metadata.map.id, {

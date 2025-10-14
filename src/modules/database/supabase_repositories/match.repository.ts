@@ -24,7 +24,9 @@ export class MatchRepository implements MatchRepositoryInterface {
 			mapId: dbMatch.map_id,
 			modeId: dbMatch.mode_id,
 			date: new Date(dbMatch.date),
-			winningTeam: dbMatch.winning_team
+			winningTeam: dbMatch.winning_team,
+			redRounds: dbMatch.red_rounds,
+			blueRounds: dbMatch.blue_rounds
 		}
 	}
 
@@ -39,7 +41,9 @@ export class MatchRepository implements MatchRepositoryInterface {
 			map_id: match.mapId,
 			mode_id: match.modeId,
 			date: match.date.toISOString(),
-			winning_team: match.winningTeam
+			winning_team: match.winningTeam,
+			red_rounds: match.redRounds,
+			blue_rounds: match.blueRounds
 		}
 	}
 

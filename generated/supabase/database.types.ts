@@ -46,24 +46,30 @@ export type Database = {
       }
       matches: {
         Row: {
+          blue_rounds: number
           date: string
           id: string
           map_id: string
           mode_id: string
+          red_rounds: number
           winning_team: string
         }
         Insert: {
+          blue_rounds?: number
           date: string
           id: string
           map_id: string
           mode_id: string
+          red_rounds?: number
           winning_team: string
         }
         Update: {
+          blue_rounds?: number
           date?: string
           id?: string
           map_id?: string
           mode_id?: string
+          red_rounds?: number
           winning_team?: string
         }
         Relationships: [
@@ -160,6 +166,13 @@ export type Database = {
           team?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "performances_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "performances_match_id_fkey"
             columns: ["match_id"]
