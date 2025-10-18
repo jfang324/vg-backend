@@ -66,7 +66,7 @@ export class MatchesService {
 						}
 					},
 					players: performances.map((performance) => {
-						const { matchId: _, playerId, agentId, rank: __, ...rest } = performance
+						const { matchId: _, playerId, agentId, ...rest } = performance
 						const player = players.find((player) => player.id === playerId)!
 						const agent = agents.find((agent) => agent.id === agentId)!
 
@@ -78,11 +78,13 @@ export class MatchesService {
 									cardImg: `https://media.valorant-api.com/agents/${player.customization.card}/displayicon.png`
 								}
 							},
-							stats: rest,
-							agent: {
-								...agent,
+							stats: {
+								...rest,
+								agent: {
+									...agent,
 								img: `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`
-							}
+								}
+							},
 						}
 					})
 				}
