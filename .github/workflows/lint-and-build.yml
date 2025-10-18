@@ -126,5 +126,11 @@ jobs:
             - name: Generate Supabase types
               run: npm run generate-supabase-types
 
+            - name: Upload generated files
+              uses: actions/upload-artifact@v3
+              with:
+                  name: generated
+                  path: generated
+
             - name: Build code
               run: npm run build
