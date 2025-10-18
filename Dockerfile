@@ -6,7 +6,7 @@ COPY package.json .
 COPY generated ./generated
 RUN npm install
 
-RUN ls -la generated
+RUN echo "Listing generated folder recursively:" && ls -laR generated || echo "generated folder not found"
 
 COPY . .
 
