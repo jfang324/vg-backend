@@ -6,6 +6,8 @@ COPY package.json .
 COPY generated ./generated
 RUN npm install
 
+RUN ls -la generated
+
 COPY . .
 
 RUN npm run build
