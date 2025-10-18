@@ -120,5 +120,11 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-generated-api-client- 
 
+            - name: Login to Supabase
+              run: npx supabase login ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+              
+            - name: Generate Supabase types
+              run: npm run generate-supabase-types
+
             - name: Build code
               run: npm run build

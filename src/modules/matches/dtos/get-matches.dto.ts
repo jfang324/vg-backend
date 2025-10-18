@@ -1,7 +1,9 @@
 import { MatchDto, PlayerDto, StatsDto } from '@common/types/dtos/generic.dto'
 import { ApiProperty } from '@nestjs/swagger'
 
-class MatchPerformanceDto extends PlayerDto {
+class MatchPerformanceDto {
+	@ApiProperty({ type: PlayerDto })
+	player: PlayerDto
 	@ApiProperty({ type: StatsDto })
 	stats: StatsDto
 }

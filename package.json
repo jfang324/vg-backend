@@ -11,7 +11,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix --config ./eslint.config.mjs",
     "test": "npm run test:unit && npm run test:e2e",
     "test:watch": "jest --watch",
@@ -24,7 +24,9 @@
     "generate-api-client": "openapi-generator-cli generate -i ./generated/openapi/swagger.yaml -g typescript-axios -o ./generated/openapi/api-client --additional-properties=withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api",
     "generate-supabase-types": "npx supabase gen types typescript --project-id yxgtxtejrtflqfcmzsgj > ./generated/supabase/database.types.ts",
     "start:redis": "docker run -d --name vg-backend-redis -p 6379:6379 redis:7",
-    "pause:redis": "docker pause vg-backend-redis"
+    "pause:redis": "docker pause vg-backend-redis",
+    "docker:build": "docker build --env-file .env -t vg-backend .",
+    "docker:run": "docker run -d --name vg-backend -p 3001:3001 vg-backend"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
