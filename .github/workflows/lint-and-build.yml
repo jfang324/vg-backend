@@ -45,9 +45,7 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: generated/openapi/api-client
-                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-generated-api-client-
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}-1
 
             - name: Lint code
               run: npm run lint
@@ -82,9 +80,7 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: generated/openapi/api-client
-                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-generated-api-client-
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}-1
 
             - name: Test code
               run: npm run test:cov
@@ -116,9 +112,7 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: generated/openapi/api-client
-                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-generated-api-client- 
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}-1
 
             - name: Login to Supabase
               run: npx supabase --token ${{ secrets.SUPABASE_ACCESS_TOKEN }} login 
