@@ -3,6 +3,7 @@ name: Backend CD - Build and Upload Image
 on:
     workflow_run:
         workflows: ['Backend CI - Lint, Test, Build']
+        branches: ['**']
         types:
             - completed
 
