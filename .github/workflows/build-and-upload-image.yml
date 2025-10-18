@@ -1,8 +1,10 @@
 name: Backend CD - Build and Upload Image
 
 on:
-    push:
-        branches: ['**']
+    workflow_run:
+        workflows: ['Backend CI - Lint, Test, Build']
+        types:
+            - completed
 
 env:
   BASE_URL: http://localhost

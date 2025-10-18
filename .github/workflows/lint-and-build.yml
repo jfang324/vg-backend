@@ -2,9 +2,9 @@ name: Backend CI - Lint, Test, Build
 
 on:
     push:
-        branches: ['**']
+        branches: [main]
     pull_request:
-        branches: ['main']
+        branches: [main]
 
 env:
   BASE_URL: http://localhost
