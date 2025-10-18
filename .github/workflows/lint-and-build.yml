@@ -45,7 +45,7 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: generated/openapi/api-client
-                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}-1
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
 
             - name: Lint code
               run: npm run lint
@@ -80,7 +80,7 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: generated/openapi/api-client
-                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}-1
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
 
             - name: Test code
               run: npm run test:cov
@@ -112,7 +112,7 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: generated/openapi/api-client
-                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}-1
+                  key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
 
             - name: Login to Supabase
               run: npx supabase --token ${{ secrets.SUPABASE_ACCESS_TOKEN }} login 
@@ -142,6 +142,9 @@ jobs:
               with:
                   name: generated
                   path: generated
+
+            - name: List downloaded files
+              run: ls -laR generated
 
             - name: Log in to Docker Hub
               uses: docker/login-action@v3
