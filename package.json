@@ -25,8 +25,8 @@
     "generate-supabase-types": "npx supabase gen types typescript --project-id yxgtxtejrtflqfcmzsgj > ./generated/supabase/database.types.ts",
     "start:redis": "docker run -d --name vg-backend-redis -p 6379:6379 redis:7",
     "pause:redis": "docker pause vg-backend-redis",
-    "docker:build": "docker build --env-file .env -t vg-backend .",
-    "docker:run": "docker run -d --name vg-backend -p 3001:3001 vg-backend"
+    "docker:build": "docker build -t vg-backend .",
+    "docker:run": "docker run --env-file .env -d --name vg-backend -p 3001:3001 vg-backend"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
