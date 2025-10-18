@@ -121,7 +121,7 @@ jobs:
                       ${{ runner.os }}-generated-api-client- 
 
             - name: Login to Supabase
-              run: npx supabase login ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+              run: npx supabase --token ${{ secrets.SUPABASE_ACCESS_TOKEN }} login 
               
             - name: Generate Supabase types
               run: npm run generate-supabase-types
