@@ -160,3 +160,4 @@ jobs:
               with:
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/vg-backend:latest
+                  no-cache: true
