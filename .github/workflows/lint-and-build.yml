@@ -1,4 +1,4 @@
-name: Backend CI - Lint, Test, Build
+name: Backend CI/CD
 
 on:
     push:
@@ -46,8 +46,6 @@ jobs:
               with:
                   path: generated/openapi/api-client
                   key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-generated-api-client-
 
             - name: Lint code
               run: npm run lint
@@ -83,8 +81,6 @@ jobs:
               with:
                   path: generated/openapi/api-client
                   key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-generated-api-client-
 
             - name: Test code
               run: npm run test:cov
@@ -117,8 +113,6 @@ jobs:
               with:
                   path: generated/openapi/api-client
                   key: ${{ runner.os }}-generated-api-client-${{ hashFiles('**/generated/openapi/swagger.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-generated-api-client- 
 
             - name: Login to Supabase
               run: npx supabase --token ${{ secrets.SUPABASE_ACCESS_TOKEN }} login 
@@ -135,3 +129,34 @@ jobs:
 
             - name: Build code
               run: npm run build
+
+    upload:
+        if: github.ref == 'refs/heads/main'
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Download generated files
+              uses: actions/download-artifact@v4
+              with:
+                  name: generated
+                  path: generated
+
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build and push
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/vg-backend:latest
+                  no-cache: true
