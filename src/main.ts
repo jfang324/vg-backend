@@ -31,6 +31,15 @@ async function bootstrap() {
 		defaultVersion: process.env.DEFAULT_VERSION || '1'
 	})
 
+	if(process.env.NODE_ENV === 'development') {
+		app.enableCors({
+		origin: '*',
+		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+		preflightContinue: false,
+		optionsSuccessStatus: 204
+	})
+	}
+	
 	const port = parseInt(process.env.PORT || '3000')
 	await app.listen(port)
 

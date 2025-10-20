@@ -82,9 +82,9 @@ export class MatchesService {
 								...rest,
 								agent: {
 									...agent,
-								img: `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`
+									img: `https://media.valorant-api.com/agents/${agent.id}/displayicon.png`
 								}
-							},
+							}
 						}
 					})
 				}
@@ -154,10 +154,12 @@ export class MatchesService {
 								cardImg: `https://media.valorant-api.com/agents/${player.customization.card}/displayicon.png`
 							}
 						},
-						stats: rest,
-						agent: {
-							...agent,
-							img: `https://media.valorant-api.com/agents/${agentLookup.get(agentId)!.id}/displayicon.png`
+						stats: {
+							...rest,
+							agent: {
+								...agent,
+								img: `https://media.valorant-api.com/agents/${agentLookup.get(agentId)!.id}/displayicon.png`
+							}
 						}
 					}
 				})
