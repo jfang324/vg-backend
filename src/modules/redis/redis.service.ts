@@ -40,7 +40,18 @@ export class RedisService implements OnApplicationShutdown {
 	}
 
 	async onApplicationShutdown() {
-		await this.client.disconnect()
+		// disconnect() can reject if the connection already closed at runtime
+		try {
+			await this.client.disconnect()
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				this.loggingService.logRedisError('Failed to disconnect from Redis', error.message)
+			}
+		}
+	}
+
+	private buildKey(region: string, platform: string, name: string, tag: string, mode: string): string {
+		return `region:${region}platform:${platform}name:${name}tag:${tag}mode:${mode}`
 	}
 
 	async setProfileCache(
@@ -51,7 +62,7 @@ export class RedisService implements OnApplicationShutdown {
 		mode: string,
 		assets: string[]
 	): Promise<void> {
-		const key = `region:${region}platform:${platform}name:${name}tag:${tag}mode:${mode}`
+		const key = this.buildKey(region, platform, name, tag, mode)
 
 		try {
 			await this.client.sAdd(key, assets)
@@ -70,7 +81,7 @@ export class RedisService implements OnApplicationShutdown {
 		tag: string,
 		mode: string
 	): Promise<string[]> {
-		const key = `region:${region}platform:${platform}name:${name}tag:${tag}mode:${mode}`
+		const key = this.buildKey(region, platform, name, tag, mode)
 
 		try {
 			const assets = await this.client.sMembers(key)
