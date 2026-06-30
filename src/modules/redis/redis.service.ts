@@ -29,6 +29,12 @@ export class RedisService implements OnApplicationShutdown {
 				port
 			}
 		})
+
+		this.client.on('error', (error: unknown) => {
+			if (error instanceof Error) {
+				this.loggingService.logRedisError('Redis error', error.message)
+			}
+		})
 	}
 
 	async onModuleInit() {
@@ -65,8 +71,7 @@ export class RedisService implements OnApplicationShutdown {
 		const key = this.buildKey(region, platform, name, tag, mode)
 
 		try {
-			await this.client.sAdd(key, assets)
-			await this.client.expire(key, 60)
+			await this.client.multi().sAdd(key, assets).expire(key, 60).exec()
 		} catch (error: unknown) {
 			if (error instanceof Error) {
 				this.loggingService.logRedisError(`SET key: ${key}`, error.message)
