@@ -1,5 +1,6 @@
 import { LoggingService } from '@modules/logging/logging.service'
 import { Injectable, OnApplicationShutdown } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { createClient, RedisClientType } from 'redis'
 import { RedisConnectionError, RedisInitError } from './redis.errors'
 
@@ -7,11 +8,14 @@ import { RedisConnectionError, RedisInitError } from './redis.errors'
 export class RedisService implements OnApplicationShutdown {
 	private readonly client: RedisClientType
 
-	constructor(private readonly loggingService: LoggingService) {
-		const username = process.env.REDIS_USERNAME
-		const password = process.env.REDIS_PASSWORD
-		const host = process.env.REDIS_HOST
-		const port = Number(process.env.REDIS_PORT)
+	constructor(
+		private readonly configService: ConfigService,
+		private readonly loggingService: LoggingService
+	) {
+		const username = this.configService.get<string>('REDIS_USERNAME')
+		const password = this.configService.get<string>('REDIS_PASSWORD')
+		const host = this.configService.get<string>('REDIS_HOST')
+		const port = Number(this.configService.get<string>('REDIS_PORT'))
 
 		if (!username || !password || !host || !port) {
 			throw new RedisInitError('Redis service is not configured properly')
@@ -39,7 +43,14 @@ export class RedisService implements OnApplicationShutdown {
 		await this.client.disconnect()
 	}
 
-	async setProfileCache(region: string, platform: string, name: string, tag: string, mode: string, assets: string[]): Promise<void> {
+	async setProfileCache(
+		region: string,
+		platform: string,
+		name: string,
+		tag: string,
+		mode: string,
+		assets: string[]
+	): Promise<void> {
 		const key = `region:${region}platform:${platform}name:${name}tag:${tag}mode:${mode}`
 
 		try {
@@ -47,15 +58,18 @@ export class RedisService implements OnApplicationShutdown {
 			await this.client.expire(key, 60)
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				this.loggingService.logRedisError(
-					`SET key: ${key}`,
-					error.message
-				)
+				this.loggingService.logRedisError(`SET key: ${key}`, error.message)
 			}
 		}
 	}
 
-	async getProfileCache(region: string, platform: string, name: string, tag: string, mode: string): Promise<string[]> {
+	async getProfileCache(
+		region: string,
+		platform: string,
+		name: string,
+		tag: string,
+		mode: string
+	): Promise<string[]> {
 		const key = `region:${region}platform:${platform}name:${name}tag:${tag}mode:${mode}`
 
 		try {
@@ -64,10 +78,7 @@ export class RedisService implements OnApplicationShutdown {
 			return assets
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				this.loggingService.logRedisError(
-					`GET key: ${key}`,
-					error.message
-				)
+				this.loggingService.logRedisError(`GET key: ${key}`, error.message)
 			}
 
 			return []
