@@ -50,7 +50,12 @@ describe('MapRepository', () => {
 		const response = await mapRepository.upsertMany(mockMaps)
 
 		expect(mockFrom).toHaveBeenCalledWith('maps')
-		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('MapRepository', 'Map', 'upsertMany', expect.any(Error))
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
+			'MapRepository',
+			'Map',
+			'upsertMany',
+			expect.any(Error)
+		)
 		expect(response).toEqual(mockMaps)
 	})
 
@@ -87,7 +92,12 @@ describe('MapRepository', () => {
 
 		const response = await mapRepository.getById(mockId)
 
-		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('MapRepository', 'Map', 'getById', expect.any(Error))
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
+			'MapRepository',
+			'Map',
+			'getById',
+			expect.any(Error)
+		)
 		expect(response).toEqual(null)
 	})
 })

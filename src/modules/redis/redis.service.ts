@@ -69,7 +69,7 @@ export class RedisService implements OnApplicationShutdown {
 		assets: string[]
 	): Promise<void> {
 		const key = this.buildKey(region, platform, name, tag, mode)
-1
+
 		try {
 			await this.client.multi().sAdd(key, assets).expire(key, 60).exec()
 		} catch (error: unknown) {

@@ -44,11 +44,7 @@ export class HenrikDevService {
 				} catch (error: unknown) {
 					const normalizedError = error instanceof Error ? error : new Error('Something unexpected happened')
 
-					this.loggingService.logValidationError(
-						'HenrikDevService',
-						'HenrikDevAPI',
-						normalizedError
-					)
+					this.loggingService.logValidationError('HenrikDevService', 'HenrikDevAPI', normalizedError)
 					throw new BadGatewayException('Failed to validate data from HenrikDev')
 				}
 			})
@@ -192,11 +188,7 @@ export class HenrikDevService {
 				} catch (error: unknown) {
 					const normalizedError = error instanceof Error ? error : new Error('Something unexpected happened')
 
-					this.loggingService.logValidationError(
-						'HenrikDevService',
-						'HenrikDevAPI',
-						normalizedError
-					)
+					this.loggingService.logValidationError('HenrikDevService', 'HenrikDevAPI', normalizedError)
 					throw new BadGatewayException('Failed to validate data from HenrikDev')
 				}
 			})

@@ -11,6 +11,10 @@ export class LoggingService {
 		this.logger.log(message)
 	}
 
+	logError(message: string) {
+		this.logger.error(message)
+	}
+
 	logApiError(caller: string, api: string, error: Error) {
 		this.logger.error(`call to ${api} by ${caller} failed with message [${error.message}]`)
 	}
@@ -26,5 +30,4 @@ export class LoggingService {
 	logRedisError(caller: string, source: string, operation: string, error: Error) {
 		this.logger.error(`${caller} failed to ${operation} for ${source} with error [${error.message}]`)
 	}
-
 }

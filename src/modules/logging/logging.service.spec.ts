@@ -19,6 +19,13 @@ describe('LoggingService', () => {
 		expect(mockLogger.log).toHaveBeenCalledWith(message)
 	})
 
+	it('should log the error message', () => {
+		const message = 'test message'
+		loggingService.logError(message)
+
+		expect(mockLogger.error).toHaveBeenCalledWith(message)
+	})
+
 	it('should log the error message and API context', () => {
 		const caller = 'testCaller'
 		const api = 'testApi'

@@ -50,7 +50,12 @@ describe('AgentRepository', () => {
 		const response = await agentRepository.upsertMany(mockAgents)
 
 		expect(mockFrom).toHaveBeenCalledWith('agents')
-		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('AgentRepository', 'Agent', 'upsertMany', expect.any(Error))
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
+			'AgentRepository',
+			'Agent',
+			'upsertMany',
+			expect.any(Error)
+		)
 		expect(response).toEqual(mockAgents)
 	})
 

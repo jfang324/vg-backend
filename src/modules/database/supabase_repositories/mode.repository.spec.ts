@@ -50,7 +50,12 @@ describe('ModeRepository', () => {
 		const response = await modeRepository.upsertMany(mockModes)
 
 		expect(mockFrom).toHaveBeenCalledWith('modes')
-		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('ModeRepository', 'Mode', 'upsertMany', expect.any(Error))
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
+			'ModeRepository',
+			'Mode',
+			'upsertMany',
+			expect.any(Error)
+		)
 		expect(response).toEqual(mockModes)
 	})
 
@@ -86,7 +91,12 @@ describe('ModeRepository', () => {
 
 		const response = await modeRepository.getByName(mockName)
 
-		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('ModeRepository', 'Mode', 'getByName', expect.any(Error))
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
+			'ModeRepository',
+			'Mode',
+			'getByName',
+			expect.any(Error)
+		)
 		expect(response).toEqual(null)
 	})
 
@@ -122,7 +132,12 @@ describe('ModeRepository', () => {
 
 		const response = await modeRepository.getById(mockId)
 
-		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith('ModeRepository', 'Mode', 'getById', expect.any(Error))
+		expect(mockLoggingService.logDatabaseError).toHaveBeenCalledWith(
+			'ModeRepository',
+			'Mode',
+			'getById',
+			expect.any(Error)
+		)
 		expect(response).toEqual(null)
 	})
 })
