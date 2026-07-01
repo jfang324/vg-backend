@@ -1,5 +1,5 @@
 import { LoggingService } from '@modules/logging/logging.service'
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import { CallHandler, ExecutionContext, HttpException, HttpStatus, Injectable, NestInterceptor } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
@@ -30,10 +30,9 @@ export class LoggingInterceptor implements NestInterceptor {
 				error: (err: Error) => {
 					const end: number = Date.now()
 					const duration = end - start
+					const status = err instanceof HttpException ? err.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
 
-					this.loggingService.logError(
-						`${method} ${url} ${res.statusCode} ${duration}ms - error: ${err.message}`
-					)
+					this.loggingService.logError(`${method} ${url} ${status} ${duration}ms - error: ${err.message}`)
 				}
 			})
 		)
