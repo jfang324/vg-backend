@@ -34,40 +34,40 @@ describe('LoggingService', () => {
 	it('should log the error message and validation context', () => {
 		const caller = 'testCaller'
 		const dataSource = 'test data source'
-		const error = 'test error'
+		const error = new Error('test error')
 
 		loggingService.logValidationError(caller, dataSource, error)
 
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(caller))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(dataSource))
-		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error.message))
 	})
 
 	it('should log the error message and database context', () => {
 		const caller = 'testCaller'
 		const repository = 'test repository'
 		const operation = 'test operation'
-		const error = 'test error'
+		const error = new Error('test error')
 
 		loggingService.logDatabaseError(caller, repository, operation, error)
 
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(caller))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(repository))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(operation))
-		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error.message))
 	})
 
 	it('should log the error message and Redis context', () => {
 		const caller = 'testCaller'
 		const source = 'test source'
 		const operation = 'testOperation'
-		const error = 'test error'
+		const error = new Error('test error')
 
 		loggingService.logRedisError(caller, source, operation, error)
 
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(caller))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(source))
 		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(operation))
-		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error))
+		expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining(error.message))
 	})
 })
