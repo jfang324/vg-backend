@@ -74,7 +74,7 @@ export class PlayersService {
 
 		const assets = [rankImg, cardImg, ...agentImgs, ...mapImgs]
 
-		this.redisService.setProfileCache(region, platform, name, tag, mode, assets)
+		await this.redisService.setProfileCache(region, platform, name, tag, mode, assets)
 
 		return {
 			message: 'Successfully retrieved recent matches',
