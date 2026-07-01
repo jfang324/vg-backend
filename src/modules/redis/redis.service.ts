@@ -57,7 +57,7 @@ export class RedisService implements OnApplicationShutdown {
 	}
 
 	private buildKey(region: string, platform: string, name: string, tag: string, mode: string): string {
-		return `region:${region}platform:${platform}name:${name}tag:${tag}mode:${mode}`
+		return `region:${region}-platform:${platform}-name:${name}-tag:${tag}-mode:${mode}`
 	}
 
 	async setProfileCache(
