@@ -123,7 +123,7 @@ export class MatchesService {
 		//staticTablePromises must be completed first because dynamicTablePromises insert entities that reference the entities from staticTablePromises
 		staticTablePromises
 			.then(() => dynamicTablePromises.then(() => this.performanceRepository.upsertMany(performances)))
-			.catch((error: Error) => this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message))
+			.catch((error: Error) => this.loggingService.logDatabaseError('MatchesService', 'Performance', 'upsertMany', error))
 
 		const mode = modes.find((mode) => mode.id === match.modeId)
 

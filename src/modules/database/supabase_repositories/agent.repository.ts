@@ -46,7 +46,7 @@ export class AgentRepository implements AgentRepositoryInterface {
 		const { data, error } = await this.supabase.from('agents').select('*').select()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Agent', 'onModuleInit', error.message)
+			this.loggingService.logDatabaseError('AgentRepository', 'Agent', 'onModuleInit', error)
 			throw new InternalServerErrorException(`Failed to retrieve agents from database: ${error.message}`)
 		}
 
@@ -77,7 +77,7 @@ export class AgentRepository implements AgentRepositoryInterface {
 			.upsert(dbAgents, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Agent', 'upsertMany', error.message)
+			this.loggingService.logDatabaseError('AgentRepository', 'Agent', 'upsertMany', error)
 			return newAgents
 		}
 
@@ -101,7 +101,7 @@ export class AgentRepository implements AgentRepositoryInterface {
 		const { data, error } = await this.supabase.from('agents').select('*').in('id', ids)
 
 		if (error) {
-			this.loggingService.logDatabaseError('Agent', 'getManyByIds', error.message)
+			this.loggingService.logDatabaseError('AgentRepository', 'Agent', 'getManyByIds', error)
 			return []
 		}
 

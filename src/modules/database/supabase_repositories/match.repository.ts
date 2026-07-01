@@ -61,7 +61,7 @@ export class MatchRepository implements MatchRepositoryInterface {
 		})
 
 		if (error) {
-			this.loggingService.logDatabaseError('Match', 'upsertMany', error.message)
+			this.loggingService.logDatabaseError('MatchRepository', 'Match', 'upsertMany', error)
 		}
 
 		return matches
@@ -76,7 +76,7 @@ export class MatchRepository implements MatchRepositoryInterface {
 		const { data, error } = await this.supabase.from('matches').select('*').eq('id', id).maybeSingle()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Match', 'getById', error.message)
+			this.loggingService.logDatabaseError('MatchRepository', 'Match', 'getById', error)
 		}
 
 		if (!data) {
