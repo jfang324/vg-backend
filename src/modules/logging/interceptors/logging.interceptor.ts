@@ -26,6 +26,12 @@ export class LoggingInterceptor implements NestInterceptor {
 					const duration = end - start
 
 					this.loggingService.logInfo(`${method} ${url} ${res.statusCode} ${duration}ms`)
+				},
+				error: (err: Error) => {
+					const end: number = Date.now()
+					const duration = end - start
+
+					this.loggingService.logInfo(`${method} ${url} ${res.statusCode} ${duration}ms - error: ${err.message}`)
 				}
 			})
 		)
