@@ -65,7 +65,9 @@ export class PlayersService {
 		//staticTablePromises must be completed first because dynamicTablePromises insert entities that reference the entities from staticTablePromises
 		void staticTablePromises
 			.then(() => dynamicTablePromises.then(() => this.performanceRepository.upsertMany(performances)))
-			.catch((error: Error) => this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message))
+			.catch((error: Error) =>
+				this.loggingService.logDatabaseError('PlayersService', 'Performance', 'upsertMany', error)
+			)
 
 		const rankImg = `https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e48a390db8b1/${currentPlayer.rank.id}/smallicon.png`
 		const cardImg = `https://media.valorant-api.com/playercards/${currentPlayer.customization.card}/wideart.png`

@@ -41,11 +41,10 @@ export class HenrikDevService {
 					const camelCaseMatch = camelcaseKeys(match, { deep: true })
 
 					return V4MatchSchema.parse(camelCaseMatch)
-				} catch (error) {
-					this.loggingService.logValidationError(
-						'HenrikDev',
-						`Failed to validate data from HenrikDev with error [${error}]`
-					)
+				} catch (error: unknown) {
+					const normalizedError = error instanceof Error ? error : new Error('Something unexpected happened')
+
+					this.loggingService.logValidationError('HenrikDevService', 'HenrikDevAPI', normalizedError)
 					throw new BadGatewayException('Failed to validate data from HenrikDev')
 				}
 			})
@@ -149,7 +148,7 @@ export class HenrikDevService {
 			}
 		} catch (error: unknown) {
 			if (error instanceof AxiosError) {
-				this.loggingService.logApiError('HenrikDev', error)
+				this.loggingService.logApiError('HenrikDevService', 'HenrikDevAPI', error)
 
 				const status = error.response?.status
 
@@ -186,11 +185,10 @@ export class HenrikDevService {
 					const camelCaseMatch = camelcaseKeys(match, { deep: true })
 
 					return V1StoredMatchSchema.parse(camelCaseMatch)
-				} catch (error) {
-					this.loggingService.logValidationError(
-						'HenrikDev',
-						`Failed to validate data from HenrikDev with error [${error}]`
-					)
+				} catch (error: unknown) {
+					const normalizedError = error instanceof Error ? error : new Error('Something unexpected happened')
+
+					this.loggingService.logValidationError('HenrikDevService', 'HenrikDevAPI', normalizedError)
 					throw new BadGatewayException('Failed to validate data from HenrikDev')
 				}
 			})
@@ -267,7 +265,7 @@ export class HenrikDevService {
 			}
 		} catch (error: unknown) {
 			if (error instanceof AxiosError) {
-				this.loggingService.logApiError('HenrikDev', error)
+				this.loggingService.logApiError('HenrikDevService', 'HenrikDevAPI', error)
 
 				const status = error.response?.status
 
@@ -394,7 +392,7 @@ export class HenrikDevService {
 			}
 		} catch (error) {
 			if (error instanceof AxiosError) {
-				this.loggingService.logApiError('HenrikDev', error)
+				this.loggingService.logApiError('HenrikDevService', 'HenrikDevAPI', error)
 
 				const status = error.response?.status
 

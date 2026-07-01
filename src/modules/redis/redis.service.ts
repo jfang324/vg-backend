@@ -32,7 +32,7 @@ export class RedisService implements OnApplicationShutdown {
 
 		this.client.on('error', (error: unknown) => {
 			if (error instanceof Error) {
-				this.loggingService.logRedisError('Redis error', error.message)
+				this.loggingService.logRedisError('RedisService', 'Redis', 'connect', error)
 			}
 		})
 	}
@@ -51,7 +51,7 @@ export class RedisService implements OnApplicationShutdown {
 			await this.client.disconnect()
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				this.loggingService.logRedisError('Failed to disconnect from Redis', error.message)
+				this.loggingService.logRedisError('RedisService', 'Redis', 'disconnect', error)
 			}
 		}
 	}
@@ -74,7 +74,7 @@ export class RedisService implements OnApplicationShutdown {
 			await this.client.multi().sAdd(key, assets).expire(key, 60).exec()
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				this.loggingService.logRedisError(`SET key: ${key}`, error.message)
+				this.loggingService.logRedisError('RedisService', key, 'setProfileCache', error)
 			}
 		}
 	}
@@ -94,7 +94,7 @@ export class RedisService implements OnApplicationShutdown {
 			return assets
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				this.loggingService.logRedisError(`GET key: ${key}`, error.message)
+				this.loggingService.logRedisError('RedisService', key, 'getProfileCache', error)
 			}
 
 			return []

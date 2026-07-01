@@ -74,7 +74,7 @@ export class PlayerRepository implements PlayerRepositoryInterface {
 			.upsert(dbPlayers, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Player', 'upsertMany', error.message)
+			this.loggingService.logDatabaseError('PlayerRepository', 'Player', 'upsertMany', error)
 		}
 
 		return players
@@ -89,7 +89,7 @@ export class PlayerRepository implements PlayerRepositoryInterface {
 		const { data, error } = await this.supabase.from('players').select('*').eq('id', id).single()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Player', 'getById', error.message)
+			this.loggingService.logDatabaseError('PlayerRepository', 'Player', 'getById', error)
 			throw new Error(`Failed to retrieve player from database: ${error.message}`)
 		}
 
@@ -107,7 +107,7 @@ export class PlayerRepository implements PlayerRepositoryInterface {
 		const { data, error } = await this.supabase.from('players').select('*').in('id', ids)
 
 		if (error) {
-			this.loggingService.logDatabaseError('Player', 'findManyByIds', error.message)
+			this.loggingService.logDatabaseError('PlayerRepository', 'Player', 'findManyByIds', error)
 			return []
 		}
 

@@ -1,61 +1,33 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { AxiosError } from 'axios'
 
 /**
  * Simple logging service for standardized logging format
  */
 @Injectable()
 export class LoggingService {
-	constructor(private readonly logger: Logger) {}
+	private readonly logger = new Logger(LoggingService.name)
 
-	/**
-	 * Logs a message using the NestJS Logger
-	 *
-	 * @param message - The message to log
-	 */
 	logInfo(message: string) {
 		this.logger.log(message)
 	}
 
-	/**
-	 * Logs a formatted error message related to an API call using the NestJS Logger
-	 *
-	 * @param serviceName - The name of the service that the error occurred in
-	 * @param error - The error object
-	 */
-	logApiError(serviceName: string, error: AxiosError) {
-		this.logger.error(
-			`Call to ${serviceName} failed with status code ${error.response?.status} and message [${error.message}]`
-		)
+	logError(message: string) {
+		this.logger.error(message)
 	}
 
-	/**
-	 * Logs a formatted error message related to a validation error using the NestJS Logger
-	 *
-	 * @param dataSource - The name of the data source that the error occurred in
-	 * @param error - The error message
-	 */
-	logValidationError(dataSource: string, error: string) {
-		this.logger.error(`Failed to validate data from ${dataSource} with error [${error}]`)
+	logApiError(caller: string, api: string, error: Error) {
+		this.logger.error(`call to ${api} by ${caller} failed with message [${error.message}]`)
 	}
 
-	/**
-	 * Logs a formatted error message related to a database error using the NestJS Logger
-	 *
-	 * @param repository - The name of the repository that the error occurred in
-	 * @param error - The error message
-	 */
-	logDatabaseError(repository: string, operation: string, error: string) {
-		this.logger.error(`Failed to ${operation} for ${repository} repository with error [${error}]`)
+	logValidationError(caller: string, dataSource: string, error: Error) {
+		this.logger.error(`${caller} failed to validate data from ${dataSource} with error [${error.message}]`)
 	}
 
-	/**
-	 * Logs a formatted error message related to a Redis error using the NestJS Logger
-	 *
-	 * @param source - The name of the source that the error occurred in
-	 * @param error - The error message
-	 */
-	logRedisError(source: string, error: string) {
-		this.logger.error(`Failed to cache [${source}] with error [${error}]`)
+	logDatabaseError(caller: string, repository: string, operation: string, error: Error) {
+		this.logger.error(`${caller} failed to ${operation} for ${repository} repository with error [${error.message}]`)
+	}
+
+	logRedisError(caller: string, source: string, operation: string, error: Error) {
+		this.logger.error(`${caller} failed to ${operation} for ${source} with error [${error.message}]`)
 	}
 }

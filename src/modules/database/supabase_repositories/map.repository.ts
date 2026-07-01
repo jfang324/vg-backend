@@ -46,7 +46,7 @@ export class MapRepository implements MapRepositoryInterface, OnModuleInit {
 		const { data, error } = await this.supabase.from('maps').select('*').select()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Map', 'onModuleInit', error.message)
+			this.loggingService.logDatabaseError('MapRepository', 'Map', 'onModuleInit', error)
 			throw new InternalServerErrorException(`Failed to retrieve maps from database: ${error.message}`)
 		}
 
@@ -77,7 +77,7 @@ export class MapRepository implements MapRepositoryInterface, OnModuleInit {
 			.upsert(dbMaps, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Map', 'upsertMany', error.message)
+			this.loggingService.logDatabaseError('MapRepository', 'Map', 'upsertMany', error)
 			return newMaps
 		}
 
@@ -101,7 +101,7 @@ export class MapRepository implements MapRepositoryInterface, OnModuleInit {
 		const { data, error } = await this.supabase.from('maps').select('*').eq('id', id).single()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Map', 'getById', error.message)
+			this.loggingService.logDatabaseError('MapRepository', 'Map', 'getById', error)
 			return null
 		}
 

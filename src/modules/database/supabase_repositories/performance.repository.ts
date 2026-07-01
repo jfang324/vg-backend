@@ -131,7 +131,7 @@ export class PerformanceRepository implements PerformanceRepositoryInterface {
 			.upsert(dbPerformances, { onConflict: 'player_id, match_id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Performance', 'upsertMany', error.message)
+			this.loggingService.logDatabaseError('PerformanceRepository', 'Performance', 'upsertMany', error)
 		}
 
 		return performances
@@ -146,7 +146,7 @@ export class PerformanceRepository implements PerformanceRepositoryInterface {
 		const { data, error } = await this.supabase.from('performances').select('*').eq('match_id', matchId)
 
 		if (error) {
-			this.loggingService.logDatabaseError('Performance', 'getByMatchId', error.message)
+			this.loggingService.logDatabaseError('PerformanceRepository', 'Performance', 'getByMatchId', error)
 			return []
 		}
 

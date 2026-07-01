@@ -48,7 +48,7 @@ export class ModeRepository implements ModeRepositoryInterface, OnModuleInit {
 		const { data, error } = await this.supabase.from('modes').select('*').select()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Mode', 'onModuleInit', error.message)
+			this.loggingService.logDatabaseError('ModeRepository', 'Mode', 'onModuleInit', error)
 			throw new InternalServerErrorException(`Failed to retrieve modes from database: ${error.message}`)
 		}
 
@@ -79,7 +79,7 @@ export class ModeRepository implements ModeRepositoryInterface, OnModuleInit {
 			.upsert(dbModes, { onConflict: 'id', ignoreDuplicates: true })
 
 		if (error) {
-			this.loggingService.logDatabaseError('Mode', 'upsertMany', error.message)
+			this.loggingService.logDatabaseError('ModeRepository', 'Mode', 'upsertMany', error)
 			return newModes
 		}
 
@@ -103,7 +103,7 @@ export class ModeRepository implements ModeRepositoryInterface, OnModuleInit {
 		const { data, error } = await this.supabase.from('modes').select('*').eq('name', name).single()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Mode', 'getByName', error.message)
+			this.loggingService.logDatabaseError('ModeRepository', 'Mode', 'getByName', error)
 			return null
 		}
 
@@ -129,7 +129,7 @@ export class ModeRepository implements ModeRepositoryInterface, OnModuleInit {
 		const { data, error } = await this.supabase.from('modes').select('*').eq('id', id).single()
 
 		if (error) {
-			this.loggingService.logDatabaseError('Mode', 'getById', error.message)
+			this.loggingService.logDatabaseError('ModeRepository', 'Mode', 'getById', error)
 			return null
 		}
 
