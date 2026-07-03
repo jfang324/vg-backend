@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 
 /**
  * Service that provides health check functionality
@@ -9,6 +9,9 @@ export class HealthService {
 	constructor(private readonly configService: ConfigService) {}
 
 	healthCheck() {
-		return `VG Backend version ${this.configService.get('DEFAULT_VERSION')} is running in ${this.configService.get('NODE_ENV')} mode`
+		const currentVersion = this.configService.get<string>('DEFAULT_VERSION', 'unknown')
+		const currentEnvironment = this.configService.get<string>('NODE_ENV', 'development')
+
+		return `VG Backend version ${currentVersion} is running in ${currentEnvironment} mode`
 	}
 }
